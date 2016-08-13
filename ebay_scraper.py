@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-import datetime
 import time
 from time import localtime
+import re
 
 def product(url):
    #Scrapes an eBay product page and returns the available information and data.
@@ -11,6 +11,7 @@ def product(url):
 
    #http://www.ebay.com/itm/Google-Chromecast-Wireless-Media-Streaming-Latest-Model-/222068980827?&_trksid=p2056016.m2516.l5255
    #http://www.ebay.com/itm/Merax-Finiss-Aluminum-21-Speed-700C-Road-Bike-Shimano-58cm-Black-Green-/182220370360?&_trksid=p2056016.m2516.l5255
+   #http://www.ebay.com/itm/Huge-lot-of-300-old-vintage-Baseball-Cards-in-Unopened-Packs-/161230456539?hash=item258a1586db:g:9eEAAOxywh1TBmaB
 
    #Should work in all cases, but need to check.
    item_number = soup.find('div', attrs={'id':'descItemNumber'})
@@ -42,6 +43,7 @@ def product(url):
        total_ratings = total_ratings.get_text()
        total_ratings = total_ratings.strip()
        total_ratings = total_ratings[:-8]
+       total_ratings = total_ratings.replace(u',', u'')
    else:
        total_ratings = '0'
 
@@ -69,7 +71,7 @@ def product(url):
    seller_feedback = soup.find('div', attrs={'id':'si-fb'})
    seller_feedback = seller_feedback.get_text()
    seller_feedback = seller_feedback.replace(u'\xa0', u' ')
-   seller_feedback = seller_feedback[:4]
+   seller_feedback = seller_feedback[:-19]
 
    print seller_feedback
 
@@ -78,6 +80,7 @@ def product(url):
    hot_info = soup.find('div', attrs={'id':'vi_notification_new'})
    hot_info = hot_info.get_text()
    hot_info = hot_info.strip()
+   hot_info = hot_info.replace(u',', u'')
 
    print hot_info
 
@@ -93,6 +96,7 @@ def product(url):
    amount_sold = amount_sold.find('a')
    amount_sold = amount_sold.get_text()
    amount_sold = amount_sold[:-5]
+   amount_sold = amount_sold.replace(u',', u'')
 
    print amount_sold
 
@@ -104,36 +108,53 @@ def product(url):
    if amount_available=="More than 10 available":
       amount_available = ">10"
    elif amount_available=="Limited quantity available":
-      amount_available = "Limited"
-  elif amount_available=="Last one":
+      amount_available = "Limited quantity"
+   elif amount_available=="Last one":
       amount_available = "1"
    else:
       amount_available = amount_available[:-10]
 
    print amount_available
 
+   #Seems as though it should work in all cases, but need to check.
+   pattern = re.compile(r'inquiries')
+   inquiries = soup.find(text=pattern)
+   if inquiries:
+       inquiries = inquiries[:-10]
+       inquiries = inquiries.replace(u',', u'')
+   else:
+       inquiries = "N/A"
+
+   print inquiries
+
    #http://www.ebay.com/itm/2-5-CT-Round-Cut-D-VS2-Diamond-Engagement-Ring-18k-White-Gold-Clarity-Enhanced-/371341421444?hash=item5675ac6b84:g:JtEAAOSwpDdVbGZz
    #Apparently this only works in some cases. Need to check in the diamond ring case.
-   list_price = soup.find('span', attrs={'id':'orgPrc'})
+   list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
    if list_price:
        list_price = list_price.get_text()
        list_price = list_price.strip()
+       list_price = list_price.replace(u'US ', u'')
        list_price = list_price[1:]
+       list_price = list_price.replace(u',', u'')
    else:
        list_price = "N/A"
 
    print list_price
 
-   #Could work in all cases in which there is actually a sale, but need to check.
+   #There is a problem with the way this interprets the code.
    you_save = soup.find('span', attrs={'id':'youSaveSTP'})
-
+   if not you_save:
+       you_save = soup.find('div', attrs={'id':'mm-saleAmtSavedPrc'})
+   elif you_save:
+       pass
    if you_save:
        you_save = you_save.get_text()
        you_save = you_save.strip()
        you_save = you_save.replace(u'\xa0', u' ')
-       you_save_raw = you_save[1:5]
-       you_save_percent = you_save[7:9]
-   else:
+       you_save = you_save.replace(u',', u'')
+       you_save_raw = you_save[1:-10]
+       you_save_percent = you_save[-8:-6]
+   elif not you_save:
        you_save_raw = "N/A"
        you_save_percent = "N/A"
 
@@ -142,8 +163,13 @@ def product(url):
 
    #Could work in all cases, but need to make sure.
    now_price = soup.find('span', attrs={'id':'prcIsum'})
+   if not now_price:
+       now_price = soup.find('span', attrs={'id':'mm-saleDscPrc'})
+   elif now_price:
+       pass
    now_price = now_price.get_text()
    now_price = now_price[4:]
+   now_price = now_price.replace(u',', u'')
 
    print now_price
 
@@ -151,19 +177,22 @@ def product(url):
    shipping_cost = soup.find('span', attrs={'id':'fshippingCost'})
    shipping_cost = shipping_cost.get_text()
    shipping_cost = shipping_cost.strip()
+   shipping_cost = shipping_cost.replace(u',', u'')
    if shipping_cost=="FREE":
-       shipping_cost = '0'
-   else:
+       shipping_cost = '0.00'
+   elif shipping_cost != "FREE":
        pass
+
+   print shipping_cost
 
    total_cost = float(now_price) + float(shipping_cost)
 
-   print shipping_cost
-   print total_cost
+   print("%.2f" % total_cost)
 
    #Should work in all cases, but need to check.
    total_watching = soup.find('span', attrs={'class':'vi-buybox-watchcount'})
    total_watching = total_watching.get_text()
+   total_watching = total_watching.replace(u',', u'')
 
    print total_watching
 
@@ -182,6 +211,7 @@ def product(url):
 
    delivery_date = soup.find('span', attrs={'class':'vi-acc-del-range'})
    delivery_date = delivery_date.get_text()
+   delivery_date = delivery_date.replace(u'and', u'-')
    #The estimated delivery date is based on my location; is this information
    #therefore at all relevant to our insights of other buyers//sellers?
 
@@ -194,25 +224,11 @@ def product(url):
 
    print return_policy
 
-   #'http://www.ebay.com/itm/Huge-lot-of-300-old-vintage-Baseball-Cards-in-Unopened-Packs-/161230456539?hash=item258a1586db:g:9eEAAOxywh1TBmaB'
-
-   #Almost there, but not quite yet.
-   inquiries = soup.find('div', attrs={'class':'w2b w2bsls'})
-   inquiries = inquiries.find_all('span')
-   inquiry_list = []
-   for i in inquiries:
-       for child in i.children:
-           inquiry_list.append(child)
-   #for i in inquiry_list:
-       #if i==
-        #  inquiries = i
-       #else:
-          #inquiries = 'N/A'
-
-   print inquiry_list
-
    mydate = time.strftime("%m/%d/%Y", localtime())
    mytime = time.strftime("%H:%M:%S", localtime())
+
+   print mydate
+   print mytime
 
    #Rarely ever appears. Not sure where to find it.
    #trending_price = soup.find('span', attrs={'class':'mp-prc-red}')
