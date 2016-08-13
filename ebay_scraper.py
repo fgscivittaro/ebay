@@ -19,7 +19,7 @@ def product(url):
    print item_number
 
    title = soup.find('h1', attrs={'class':'it-ttl'})
-   [s.extract() for s in title('span')]
+   fluff = [s.extract() for s in title('span')]
    title = title.get_text()
 
    print title
@@ -34,7 +34,7 @@ def product(url):
 
    total_ratings = soup.find('a', attrs={'class':"prodreview vi-VR-prodRev"})
    if total_ratings:
-       total_ratings = total_ratings.get_text().strip().replace(u',', u'')[:-8]
+       total_ratings = total_ratings.get_text().replace(u',', u'')[:-7].strip()
    else:
        total_ratings = '0'
 
@@ -62,7 +62,10 @@ def product(url):
 
    #Scrapes whatever information may be next to the fire emblem on the page.
    hot_info = soup.find('div', attrs={'id':'vi_notification_new'})
-   hot_info = hot_info.get_text().strip().replace(u',', u'')
+   if hot_info:
+       hot_info = hot_info.get_text().strip().replace(u',', u'')
+   else:
+       hot_info = "N/A"
 
    print hot_info
 
@@ -71,9 +74,13 @@ def product(url):
 
    print condition
 
-   amount_sold = soup.find('span', attrs={'class':
-   "qtyTxt vi-bboxrev-dsplblk  vi-qty-fixAlignment"})
-   amount_sold = amount_sold.find('a').get_text().replace(u',', u'')[:-5]
+   #Sometimes this will say "x sold in 24 hours", and the scraper returns only x.
+   #Is this desirable, or should be also note that it is within a 24-hour period?
+   amount_sold = soup.find('span', attrs={'class':"qtyTxt vi-bboxrev-dsplblk  vi-qty-fixAlignment"}).find('a')
+   if amount_sold:
+       amount_sold = amount_sold.get_text().replace(u',', u'')[:-5]
+   else:
+       amount_sold = "N/A"
 
    print amount_sold
 
@@ -116,7 +123,7 @@ def product(url):
    else:
        pass
    if you_save:
-       you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u',', u'')
+       you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
        you_save_raw = you_save[1:-10]
        you_save_percent = you_save[-8:-6]
    else:
@@ -131,7 +138,16 @@ def product(url):
        now_price = soup.find('span', attrs={'id':'mm-saleDscPrc'})
    else:
        pass
-   now_price = now_price.get_text().replace(u',', u'')[4:]
+   #if not now_price:
+       #link = soup.find('a',text='See price on checkout')['href']
+       #soup2 = BeautifulSoup(requests.get(link).text, 'html.parser')
+       #now_price = soup2.find('td', attrs={'class':'vANBigp'})
+   #else:
+       #pass
+   if now_price:
+       now_price = now_price.get_text().replace(u',', u'')[4:]
+   else:
+       now_price = "N/A"
 
    print now_price
 
@@ -144,9 +160,12 @@ def product(url):
 
    print shipping_cost
 
-   total_cost = float(now_price) + float(shipping_cost)
-
-   print("%.2f" % total_cost)
+   if now_price != "N/A":
+       total_cost = float(now_price) + float(shipping_cost)
+       print("%.2f" % total_cost)
+   else:
+       total_cost = "N/A"
+       print total_cost
 
    total_watching = soup.find('span', attrs={'class':'vi-buybox-watchcount'})
    total_watching = total_watching.get_text().replace(u',', u'')
