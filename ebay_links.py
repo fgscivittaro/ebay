@@ -20,4 +20,4 @@ for link in featured_links:
     for link in item_thumb:
         product_links.append(link.find('a').get('href'))
 
-print product_links
+return product_links
