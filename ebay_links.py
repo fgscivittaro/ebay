@@ -21,3 +21,34 @@ for link in featured_links:
         product_links.append(link.find('a').get('href'))
 
 return product_links
+
+potential_problem = """<script escape-xml="true">
+	  if (typeof(collectionState) != 'object') {
+	      var collectionState = {
+	          itemImageSize: {sWidth: 280, sHeight: 280, lWidth: 580, lHeight: 620},
+	          page: 1,
+	          totalPages: 2,
+	          totalItems: 17,
+	          pageId: '2057253',
+	          currentUser: '',
+	          collectionId: '323101965012',
+	          serviceHost: 'svcs.ebay.com/buying/collections/v1',
+	          owner: 'ebaytecheditor',
+	          csrfToken: '',
+	          localeId: 'en-US',
+	          siteId: 'EBAY-US',
+	          countryId: 'US',
+	          collectionCosEnabled: 'true',
+	          collectionCosHostExternal: 'https://api.ebay.com/social/collection/v1',
+	          collectionCosEditEnabled: 'true',
+	          isCollectionReorderEnabled: 'false',
+	          isOwnerSignedIn: false || false,
+	          partiallySignedInUser: '@@__@@__@@',
+	          baseDomain: 'ebay.com',
+	          currentDomain: 'www.ebay.com',
+	          isTablet: false,
+	          isMobile: false,
+              showViewCount: true
+	      };
+	  }
+	</script>"""
