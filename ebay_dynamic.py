@@ -1,6 +1,5 @@
-import requests
+import requests, time, re, schedule
 from bs4 import BeautifulSoup
-import time, re, schedule
 from time import localtime
 
 def product(url):
@@ -122,6 +121,17 @@ def product(url):
 
    print inquiries
 
+   #Scrapes the trending price of a kind of product whenever it is provided.
+   trending_price = soup.find('div', attrs={'class':'u-flL vi-bbox-posTop2 '})
+   if trending_price:
+       for i in trending_price('div'):
+           i.extract()
+       trending_price = trending_price.get_text().strip().replace(u',', u'').replace(u'US ', u'')[1:]
+   else:
+       trending_price = "N/A"
+
+   print trending_price
+
    #The original price of the product.
    list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
    if list_price:
@@ -154,12 +164,6 @@ def product(url):
        now_price = soup.find('span', attrs={'id':'mm-saleDscPrc'})
    else:
        pass
-   #if not now_price:
-       #link = soup.find('a',text='See price on checkout')['href']
-       #soup2 = BeautifulSoup(requests.get(link).text, 'html.parser')
-       #now_price = soup2.find('td', attrs={'class':'vANBigp'})
-   #else:
-       #pass
    if now_price:
        now_price = now_price.get_text().replace(u',', u'')[4:]
    else:
@@ -239,21 +243,42 @@ def product(url):
    print mydate
    print mytime
 
-   #Rarely ever appears. Not sure where to find it.
-   #trending_price = soup.find('span', attrs={'class':'mp-prc-red}')
-   #trending_price.get_text()
+   with open("product_page.txt", "w") as initial_file:
+       initial_file.write(
+       "Title:" + "," + title + "\n" +
+       "Item number:" + "," + item_number + "\n" +
+       "Condition:" + "," + condition + "\n" +
+       "Trending price:" + "," + trending_price + "\n" +
+       "List price:" + "," + list_price + "\n" +
+       "Discount($):" + "," + you_save_raw + "\n" +
+       "Discount(%):" + "," + you_save_percent + "\n" +
+       "Current price:" + "," + now_price + "\n" +
+       "Shipping cost:" + "," + shipping_cost + "\n" +
+       "Total cost:" + "," + total_cost + "\n" +
+       "Item location:" + "," + item_location + "\n" +
+       "Estimated delivery:" + "," + delivery_date + "\n" +
+       "Return policy:" + "," + return_policy + "\n" +
+       "Date:" + "," + mydate + "\n" + "\n" +
+       "Time,Number of item reviews,Item rating," +
+       "Number of seller reviews,Seller feedback rating,Hot info," +
+       "Buyers watching,Number of units sold,Units remaining,Inquiries" + "\n"
+       )
 
    def job():
-       print "Item rating: " + item_rating
-       print "Number of item reviews: " + total_ratings
-       print "Number of seller reviews: " + seller_reviews
-       print "Seller feedback rating: " + seller_feedback
-       print "Hot info: " + hot_info
-       print "Number of units sold: " + amount_sold
-       print "Units remaining: " + amount_available
-       print "Inquiries: " + inquiries
-       print "Buyers watching: " + total_watching
-       print "Time: " + mytime
+       with open("product_page.txt", "a") as continued_file:
+           continued_file.write(
+               mytime + "," +
+               total_ratings + "," +
+               item_rating + "," +
+               seller_reviews + "," +
+               seller_feedback + "," +
+               hot_info + "," +
+               total_watching + "," +
+               amount_sold + "," +
+               amount_available + "," +
+               inquiries + "," + "\n"
+               )
+       print "It worked"
 
    schedule.every(1).minutes.do(job)
 
