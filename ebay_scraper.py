@@ -1,8 +1,6 @@
-import requests
+import requests, time, re
 from bs4 import BeautifulSoup
-import time
 from time import localtime
-import re
 
 def product(url):
    #Scrapes an eBay product page and returns the available information and data.
@@ -123,6 +121,17 @@ def product(url):
 
    print inquiries
 
+   #Scrapes the trending price of a kind of product whenever it is provided.
+   trending_price = soup.find('div', attrs={'class':'u-flL vi-bbox-posTop2 '})
+   if trending_price:
+       for i in trending_price('div'):
+           i.extract()
+       trending_price = trending_price.get_text().strip().replace(u',', u'').replace(u'US ', u'')[1:]
+   else:
+       trending_price = "N/A"
+
+   print trending_price
+
    #The original price of the product.
    list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
    if list_price:
@@ -155,12 +164,6 @@ def product(url):
        now_price = soup.find('span', attrs={'id':'mm-saleDscPrc'})
    else:
        pass
-   #if not now_price:
-       #link = soup.find('a',text='See price on checkout')['href']
-       #soup2 = BeautifulSoup(requests.get(link).text, 'html.parser')
-       #now_price = soup2.find('td', attrs={'class':'vANBigp'})
-   #else:
-       #pass
    if now_price:
        now_price = now_price.get_text().replace(u',', u'')[4:]
    else:
@@ -239,7 +242,3 @@ def product(url):
 
    print mydate
    print mytime
-
-   #Rarely ever appears. Not sure where to find it.
-   #trending_price = soup.find('span', attrs={'class':'mp-prc-red}')
-   #trending_price.get_text()
