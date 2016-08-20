@@ -245,29 +245,31 @@ def product(url):
 
    with open("product_page.txt", "w") as initial_file:
        initial_file.write(
-       "Title:" + "," + title + "\n" +
-       "Item number:" + "," + item_number + "\n" +
-       "Condition:" + "," + condition + "\n" +
-       "Trending price:" + "," + trending_price + "\n" +
-       "List price:" + "," + list_price + "\n" +
-       "Discount($):" + "," + you_save_raw + "\n" +
-       "Discount(%):" + "," + you_save_percent + "\n" +
-       "Current price:" + "," + now_price + "\n" +
-       "Shipping cost:" + "," + shipping_cost + "\n" +
-       "Total cost:" + "," + total_cost + "\n" +
-       "Item location:" + "," + item_location + "\n" +
-       "Estimated delivery:" + "," + delivery_date + "\n" +
-       "Return policy:" + "," + return_policy + "\n" +
-       "Date:" + "," + mydate + "\n" + "\n" +
-       "Time,Number of item reviews,Item rating," +
-       "Number of seller reviews,Seller feedback rating,Hot info," +
-       "Buyers watching,Number of units sold,Units remaining,Inquiries" + "\n"
+       "Time,Item number,Title,Condition,Trending price($),List price($)," +
+       "Discount($),Discount(%),Current price($),Shipping cost($),Shipping type," +
+       "Total cost($),Item location,Estimated delivery,Return policy," +
+       "Total item ratings,Item rating,Total seller reviews,Seller positive feedback(%)," +
+       "Hot info,Total watching,Units sold,Units remaining,Inquiries,Date" + "\n"
        )
 
    def job():
        with open("product_page.txt", "a") as continued_file:
            continued_file.write(
                mytime + "," +
+               item_number + "," +
+               title + "," +
+               condition + "," +
+               trending_price + "," +
+               list_price + "," +
+               you_save_raw + "," +
+               you_save_percent + "," +
+               now_price + "," +
+               shipping_cost + "," +
+               shipping_type + "," +
+               total_cost + "," +
+               item_location + "," +
+               delivery_date + "," +
+               return_policy + "," +
                total_ratings + "," +
                item_rating + "," +
                seller_reviews + "," +
@@ -276,7 +278,8 @@ def product(url):
                total_watching + "," +
                amount_sold + "," +
                amount_available + "," +
-               inquiries + "," + "\n"
+               inquiries + "," +
+               mydate + "\n"
                )
        print "It worked"
 
