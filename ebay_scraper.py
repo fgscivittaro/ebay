@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from time import localtime
 from ebay_links import product_links
 
-with open("product_page.txt", "w") as initial_file:
+with open("product_data.txt", "w") as initial_file:
    initial_file.write(
    "Time;Item number;Title;Condition;Trending price($);List price($);" +
    "Discount($);Discount(%);Current price($);Shipping cost($);Shipping type;" +
@@ -256,7 +256,7 @@ def job():
         print mydate
         print mytime
 
-        with open("product_page.txt", "a") as continued_file:
+        with open("product_data.txt", "a") as continued_file:
             continued_file.write(
                 mytime + ";" +
                 item_number + ";" +
