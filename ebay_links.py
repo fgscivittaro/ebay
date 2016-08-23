@@ -1,6 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
+with open("ebay_links.txt", "w") as new_file:
+   new_file.write("Links" + "\n")
+
 #Scrapes the eBay home page and returns a list of links from the home page's
 #Featured Collections, and every link within each collection.
 url = 'http://www.ebay.com/'
@@ -27,8 +30,8 @@ for html_url in featured_links:
     editor = editor[:slash]
     col_code = html_url[-12:]
     lxml_url = 'http://www.ebay.com/cln/_ajax/2/%s/%s' % (editor, col_code)
-    params = {'itemsPerPage':'30'}
-    lxml_soup = BeautifulSoup((requests.get(lxml_url, params=params).content), 'lxml')
+    limiter = {'itemsPerPage':'30'}
+    lxml_soup = BeautifulSoup((requests.get(lxml_url, params=limiter).content), 'lxml')
 
     #Iterates through all the URLs found within the HTML code and appends them.
     item_thumb = html_soup.find_all('div', attrs={'class':'itemThumb'})
@@ -40,4 +43,4 @@ for html_url in featured_links:
 
     #Merges the lists and turns them into a set, since there is some overlap.
     product_links = list(set(product_links + final_links))
-    print len(product_links)
+    print str(len(product_links)) + " links scraped"
