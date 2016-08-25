@@ -32,7 +32,7 @@ def product(url):
     #The total number of ratings the product has received.
     total_ratings = soup.find('a', attrs={'class':"prodreview vi-VR-prodRev"})
     if total_ratings:
-       total_ratings = total_ratings.get_text().replace(u',', u'')[:-7].strip()
+       total_ratings = total_ratings.get_text().replace(u',', u'').replace(u'product', u'')[:-7].strip()
     else:
        total_ratings = '0'
 
@@ -77,7 +77,9 @@ def product(url):
     #The declared condition of the item.
     condition = soup.find('div', attrs={'class':"u-flL condText  "})
     if condition:
-       condition = condition.get_text()
+        for i in condition('span'):
+            condition = i.extract()
+        condition = condition.get_text()
     else:
        condition = "N/A"
 
@@ -86,7 +88,11 @@ def product(url):
     #How many units of the product have already been sold.
     amount_sold = soup.find('span', attrs={'class':"qtyTxt vi-bboxrev-dsplblk  vi-qty-fixAlignment"})
     if amount_sold:
-       amount_sold = amount_sold.find('a').get_text().replace(u',', u'')[:-5]
+       amount_sold = amount_sold.find('a')
+       if amount_sold:
+           amount_sold = amount_sold.get_text().replace(u',', u'')[:-5]
+       else:
+           amount_sold = "N/A"
     else:
        amount_sold = "N/A"
 
@@ -166,29 +172,55 @@ def product(url):
        now_price = now_price.get_text().replace(u',', u'')
        if now_price[:3]=="GBP":
            now_price = soup.find('span', attrs={'id':'convbinPrice'})
-           for i in now_price('span'):
-              i.extract()
-           now_price = now_price.get_text()[4:]
+           if now_price:
+               for i in now_price('span'):
+                  i.extract()
+               now_price = now_price.get_text()[4:]
+           else:
+               now_price = soup.find('span', attrs={'id':'convbidPrice'})
+               for i in now_price('span'):
+                  i.extract()
+               now_price = now_price.get_text()[4:]
        elif now_price[1]=="C":
            now_price = soup.find('span', attrs={'id':'convbinPrice'})
-           for i in now_price('span'):
-              i.extract()
-           now_price = now_price.get_text()[4:]
+           if now_price:
+               for i in now_price('span'):
+                  i.extract()
+               now_price = now_price.get_text()[4:]
+           else:
+               now_price = soup.find('span', attrs={'id':'convbidPrice'})
+               for i in now_price('span'):
+                  i.extract()
+               now_price = now_price.get_text()[4:]
+       elif now_price[:2]=="AU":
+           now_price = soup.find('span', attrs={'id':'convbinPrice'})
+           if now_price:
+               for i in now_price('span'):
+                  i.extract()
+               now_price = now_price.get_text()[4:]
+           else:
+               now_price = soup.find('span', attrs={'id':'convbidPrice'})
+               for i in now_price('span'):
+                  i.extract()
+               now_price = now_price.get_text()[4:]
        else:
            now_price = now_price[4:]
     else:
-       now_price = "N/A"
+       now_price = "Auction"
 
     print now_price
 
     #The product's shipping costs.
     shipping_cost = soup.find('span', attrs={'id':'fshippingCost'})
     if shipping_cost:
-        shipping_cost = shipping_cost.get_text().strip().replace(u',', u'')
+        shipping_cost = shipping_cost.get_text().replace(u',', u'').replace(u'$', u'').strip()
         if shipping_cost[:3]=="GBP":
             shipping_cost = soup.find('span', attrs={'id':'convetedPriceId'})
             shipping_cost = shipping_cost.get_text()[4:]
         elif shipping_cost[1]=="C":
+            shipping_cost = soup.find('span', attrs={'id':'convetedPriceId'})
+            shipping_cost = shipping_cost.get_text()[4:]
+        elif shipping_cost[:2]=="AU":
             shipping_cost = soup.find('span', attrs={'id':'convetedPriceId'})
             shipping_cost = shipping_cost.get_text()[4:]
         else:
@@ -199,9 +231,15 @@ def product(url):
     else:
         shipping_cost = soup.find('span', attrs={'id':'shSummary'})
         if shipping_cost:
+            shipping = []
             for i in shipping_cost('span'):
-                shipping_cost = i.extract()
-            shipping_cost = shipping_cost.get_text()
+                shipping.append(i.extract())
+            for i in shipping:
+                shipping_cost = i.get_text().strip()
+                if shipping_cost=="":
+                    pass
+                else:
+                    break
         else:
             shipping_cost = "N/A"
 
