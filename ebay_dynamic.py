@@ -12,7 +12,7 @@ with open("product_data.txt", "w") as initial_file:
    "Hot info;Total watching;Units sold;Units remaining;Inquiries;Date" + "\n"
    )
 
-product_links = [product_links[299]]
+#product_links = [product_links[299]]
 
 def job():
 #Scrapes an eBay product page and returns the available information and data.
@@ -319,7 +319,6 @@ def job():
         print mydate
         print mytime
 
-
         with open("product_data.txt", "a") as continued_file:
             continued_file.write(
                 mytime + ";" +
@@ -348,12 +347,8 @@ def job():
                 mydate + "\n"
                 )
 
-        while True:
-           schedule.run_pending()
-           time.sleep(5)
-
-schedule.every(15).minutes.do(job)
+schedule.every(1).day.at("17:48").do(job)
 
 while True:
    schedule.run_pending()
-   time.sleep(60)
+   time.sleep(5)
