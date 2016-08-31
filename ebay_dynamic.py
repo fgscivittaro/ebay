@@ -347,8 +347,8 @@ def job():
                 mydate + "\n"
                 )
 
-schedule.every(1).day.at("17:48").do(job)
+schedule.every(15).minutes.do(job)
 
 while True:
    schedule.run_pending()
-   time.sleep(5)
+   time.sleep(60)
