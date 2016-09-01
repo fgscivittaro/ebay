@@ -1,4 +1,4 @@
-import requests
+import requests, re
 from bs4 import BeautifulSoup
 
 with open("ebay_links.txt", "w") as new_file:
@@ -13,8 +13,8 @@ no_lazy = soup.find_all('div', attrs = {'class':'no-lazy'})
 featured_links = []
 
 #Returns the link of each Featured Collection displayed on the main page.
-for link in no_lazy:
-    featured_links.append(link.find('a').get('href'))
+for html_code in no_lazy:
+    featured_links.append(html_code.find('a').get('href'))
 
 product_links = []
 final_links = []
@@ -35,8 +35,8 @@ for html_url in featured_links:
 
     #Iterates through all the URLs found within the HTML code and appends them.
     item_thumb = html_soup.find_all('div', attrs={'class':'itemThumb'})
-    for link in item_thumb:
-        product_links.append(link.find('a').get('href'))
+    for html_code in item_thumb:
+        product_links.append(html_code.find('a').get('href'))
 
     #Retrieves all the URLs that the xml code is responsible for.
     final_links = [a["href"] for a in lxml_soup.select("div.itemThumb div.itemImg.image.lazy-image a[href]")]
@@ -44,3 +44,21 @@ for html_url in featured_links:
     #Merges the lists and turns them into a set, since there is some overlap.
     product_links = list(set(product_links + final_links))
     print str(len(product_links)) + " links scraped"
+
+ended1 = re.compile(r'This listing has ended')
+ended2 = re.compile(r'This listing was ended')
+
+for link in product_links:
+    newsoup = BeautifulSoup(requests.get(link).text, 'html.parser')
+    ended_listing1 = newsoup.find(text=ended1)
+    ended_listing2 = newsoup.find(text=ended2)
+    if ended_listing1:
+        product_links.pop(product_links.index(link))
+        print "Link removed"
+    elif ended_listing2:
+        product_links.pop(product_links.index(link))
+        print "Link removed"
+    else:
+        pass
+
+print str(len(product_links)) + " links scraped"
