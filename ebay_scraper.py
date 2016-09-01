@@ -6,19 +6,21 @@ def product(url):
 #Scrapes an eBay product page and returns the available information and data.
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
+    print url
+
     #The product's unique item_number. Could be used as a key value.
     item_number = soup.find('div', attrs={'id':'descItemNumber'})
     item_number = item_number.get_text()
 
-    print item_number
+    print "Item number: " + item_number
 
     #The product title.
     title = soup.find('h1', attrs={'class':'it-ttl'})
     for i in title('span'):
        i.extract()
-    title = title.get_text()
+    title = title.get_text().replace(u'\xae',u'')
 
-    print title
+    print "Title: " + title
 
     #The product's rating, out of five stars.
     item_rating = soup.find('span', attrs={'class':'reviews-seeall-hdn'})
@@ -27,7 +29,7 @@ def product(url):
     else:
        item_rating = 'N/A'
 
-    print item_rating
+    print "Item rating: " + item_rating
 
     #The total number of ratings the product has received.
     total_ratings = soup.find('a', attrs={'class':"prodreview vi-VR-prodRev"})
@@ -36,7 +38,7 @@ def product(url):
     else:
        total_ratings = '0'
 
-    print total_ratings
+    print "Total ratings: " + total_ratings
 
     #The seller's eBay username.
     seller_name = soup.find('span', attrs={'class':'mbg-nw'})
@@ -45,7 +47,7 @@ def product(url):
     else:
        seller_name = 'N/A'
 
-    print seller_name
+    print "Seller name: " + seller_name
 
     #The total number of reviews the seller has received.
     seller_reviews = soup.find('span', attrs={'class':'mbg-l'})
@@ -54,7 +56,7 @@ def product(url):
     else:
        seller_reviews = "N/A"
 
-    print seller_reviews
+    print "Seller reviews: " + seller_reviews
 
     #The seller's positive feedback rating, given as a percent.
     seller_feedback = soup.find('div', attrs={'id':'si-fb'})
@@ -63,7 +65,7 @@ def product(url):
     else:
        seller_feedback = "N/A"
 
-    print seller_feedback
+    print "Seller feedback: " + seller_feedback
 
     #The information given by eBay next to the "fire" emblem under the title.
     hot_info = soup.find('div', attrs={'id':'vi_notification_new'})
@@ -72,7 +74,7 @@ def product(url):
     else:
        hot_info = "N/A"
 
-    print hot_info
+    print "Hot info: " + hot_info
 
     #The declared condition of the item.
     condition = soup.find('div', attrs={'class':"u-flL condText  "})
@@ -83,7 +85,7 @@ def product(url):
     else:
        condition = "N/A"
 
-    print condition
+    print "Condition: " + condition
 
     #How many units of the product have already been sold.
     amount_sold = soup.find('span', attrs={'class':"qtyTxt vi-bboxrev-dsplblk  vi-qty-fixAlignment"})
@@ -96,7 +98,7 @@ def product(url):
     else:
        amount_sold = "N/A"
 
-    print amount_sold
+    print "Amount sold: " + amount_sold
 
     #How many available units of the product are left.
     amount_available = soup.find('span', attrs={'id':'qtySubTxt'})
@@ -113,7 +115,7 @@ def product(url):
     else:
        amount_available = "N/A"
 
-    print amount_available
+    print "Amount available: " + amount_available
 
     #The number of inquiries, if available.
     pattern = re.compile(r'inquiries')
@@ -123,7 +125,7 @@ def product(url):
     else:
        inquiries = "N/A"
 
-    print inquiries
+    print "Inquiries: " + inquiries
 
     #Scrapes the trending price of a kind of product whenever it is provided.
     trending_price = soup.find('div', attrs={'class':'u-flL vi-bbox-posTop2 '})
@@ -134,7 +136,7 @@ def product(url):
     else:
        trending_price = "N/A"
 
-    print trending_price
+    print "Trending price: " + trending_price
 
     #The original price of the product.
     list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
@@ -143,7 +145,7 @@ def product(url):
     else:
        list_price = "N/A"
 
-    print list_price
+    print "List price: " + list_price
 
     #The product discount, in both dollar and percent.
     you_save = soup.find('span', attrs={'id':'youSaveSTP'})
@@ -153,14 +155,14 @@ def product(url):
        pass
     if you_save:
        you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
-       you_save_raw = you_save[1:-10]
-       you_save_percent = you_save[-8:-6]
+       you_save_raw = you_save[1:-9].strip()
+       you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip()
     else:
        you_save_raw = "N/A"
        you_save_percent = "N/A"
 
-    print you_save_raw
-    print you_save_percent
+    print "Discount($): " + you_save_raw
+    print "Discount(%): " + you_save_percent
 
     #The product's current price, after discounts.
     now_price = soup.find('span', attrs={'id':'prcIsum'})
@@ -206,9 +208,9 @@ def product(url):
        else:
            now_price = now_price[4:]
     else:
-       now_price = "Auction"
+       now_price = "N/A"
 
-    print now_price
+    print "Now price: " + now_price
 
     #The product's shipping costs.
     shipping_cost = soup.find('span', attrs={'id':'fshippingCost'})
@@ -243,7 +245,7 @@ def product(url):
         else:
             shipping_cost = "N/A"
 
-    print shipping_cost
+    print "Shipping price: " + shipping_cost
 
     #The total number of buyers watching the product.
     total_watching = soup.find('span', attrs={'class':'vi-buybox-watchcount'})
@@ -252,7 +254,7 @@ def product(url):
     else:
        total_watching = "N/A"
 
-    print total_watching
+    print "Total watching: " + total_watching
 
     #The type of shipping that will be used for the product.
     shipping_type = soup.find('span', attrs={'id':'fShippingSvc'})
@@ -261,7 +263,7 @@ def product(url):
     else:
        shipping_type = "N/A"
 
-    print shipping_type
+    print "Shipping type: " + shipping_type
 
     #The seller's location; where the item will be shipped from.
     item_location = soup.find('div', attrs={'class':'iti-eu-bld-gry'})
@@ -270,7 +272,7 @@ def product(url):
     else:
        item_location = "N/A"
 
-    print item_location
+    print "Item location: " + item_location
 
     #The estimated date at which the product will be delivered to the DFW area.
     delivery_date = soup.find('span', attrs={'class':'vi-acc-del-range'})
@@ -281,7 +283,7 @@ def product(url):
     else:
        delivery_date = "N/A"
 
-    print delivery_date
+    print "Delivery date: " + delivery_date
 
     #The return policy offered by the seller.
     return_policy = soup.find('span', attrs={'id':'vi-ret-accrd-txt'})
@@ -294,11 +296,11 @@ def product(url):
     else:
        return_policy = "N/A"
 
-    print return_policy
+    print "Return policy: " + return_policy
 
     #The current date and time.
     mydate = time.strftime("%m/%d/%Y", localtime())
     mytime = time.strftime("%H:%M:%S", localtime())
 
-    print mydate
-    print mytime
+    print "Date: " + mydate
+    print "Time: " + mytime
