@@ -53,12 +53,25 @@ for link in product_links:
     ended_listing1 = newsoup.find(text=ended1)
     ended_listing2 = newsoup.find(text=ended2)
     if ended_listing1:
-        product_links.pop(product_links.index(link))
+        product_links.remove(link)
         print "Link removed"
     elif ended_listing2:
-        product_links.pop(product_links.index(link))
+        product_links.remove(link)
         print "Link removed"
     else:
-        pass
+        print "Link is good"
+
+for link in product_links:
+    newsoup = BeautifulSoup(requests.get(link).text, 'html.parser')
+    ended_listing1 = newsoup.find(text=ended1)
+    ended_listing2 = newsoup.find(text=ended2)
+    if ended_listing1:
+        product_links.remove(link)
+        print "Link removed"
+    elif ended_listing2:
+        product_links.remove(link)
+        print "Link removed"
+    else:
+        print "Link is good"
 
 print str(len(product_links)) + " links scraped"
