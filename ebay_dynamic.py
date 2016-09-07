@@ -6,7 +6,7 @@ from ebay_links import product_links
 with open("product_data.txt", "w") as initial_file:
    initial_file.write(
    "Time;Item number;Title;Condition;Trending price($);List price($);" +
-   "Discount($);Discount(%);Current price($);Shipping cost($);Shipping type;" +
+   "Discount($);Discount(%);Current price($);Shipping cost($);" +
    "Item location;Estimated delivery;Return policy;Total item ratings;" +
    "Item rating;Total seller reviews;Seller positive feedback(%);" +
    "Hot info;Total watching;Units sold;Units remaining;Inquiries;Date" + "\n"
@@ -21,20 +21,25 @@ def job():
            continued_file.write(url + "\n")
 
         soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-
         print url
 
         #The product's unique item_number. Could be used as a key value.
         item_number = soup.find('div', attrs={'id':'descItemNumber'})
-        item_number = item_number.get_text()
+        if item_number:
+            item_number = item_number.get_text()
+        else:
+            item_number = "N/A"
 
         print "Item number: " + item_number
 
         #The product title.
         title = soup.find('h1', attrs={'class':'it-ttl'})
-        for i in title('span'):
-           i.extract()
-        title = title.get_text().replace(u'\xae',u'')
+        if title:
+            for i in title('span'):
+               i.extract()
+            title = title.get_text().encode('ascii','replace')
+        else:
+            title = "N/A"
 
         print "Title: " + title
 
@@ -272,15 +277,6 @@ def job():
 
         print "Total watching: " + total_watching
 
-        #The type of shipping that will be used for the product.
-        shipping_type = soup.find('span', attrs={'id':'fShippingSvc'})
-        if shipping_type:
-           shipping_type = shipping_type.get_text().strip()
-        else:
-           shipping_type = "N/A"
-
-        print "Shipping type: " + shipping_type
-
         #The seller's location; where the item will be shipped from.
         item_location = soup.find('div', attrs={'class':'iti-eu-bld-gry'})
         if item_location:
@@ -333,7 +329,6 @@ def job():
                 you_save_percent + ";" +
                 now_price + ";" +
                 shipping_cost + ";" +
-                shipping_type + ";" +
                 item_location + ";" +
                 delivery_date + ";" +
                 return_policy + ";" +
@@ -351,7 +346,7 @@ def job():
 
 job()
 
-schedule.every(15).minutes.do(job)
+schedule.every(30).minutes.do(job)
 
 while True:
    schedule.run_pending()
