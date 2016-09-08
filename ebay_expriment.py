@@ -14,7 +14,6 @@ with open("product_data.txt", "w") as initial_file:
 def job():
     #Scrapes the eBay home page and returns a list of links from the home page's
     #Featured Collections, and every link within each collection.
-
     print "I'm starting the iteration"
     url1 = 'http://www.ebay.com/'
     ebaysoup = BeautifulSoup(requests.get(url1).text, 'html.parser')
@@ -184,7 +183,11 @@ def job():
             #The original price of the product.
             list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
             if list_price:
-               list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'')[1:]
+               list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'')
+               if list_price[:3]=="GBP" or list_price[1]=="C" or list_price[:2]=="AU":
+                   list_price = 'N/A'
+               else:
+                   list_price = list_price.strip()
             else:
                list_price = "N/A"
 
@@ -196,8 +199,12 @@ def job():
                pass
             if you_save:
                you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
-               you_save_raw = you_save[1:-9].strip()
-               you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip()
+               if you_save[:3]=="GBP" or you_save[1]=="C" or you_save[:2]=="AU":
+                   you_save_raw = "N/A"
+                   you_save_percent = "N/A"
+               else:
+                   you_save_raw = you_save[1:-9].strip()
+                   you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip()
             else:
                you_save_raw = "N/A"
                you_save_percent = "N/A"
@@ -274,7 +281,7 @@ def job():
                         shipping.append(i.extract())
                     for i in shipping:
                         shipping_cost = i.get_text().strip()
-                        if shipping_cost=="":
+                        if shipping_cost=="" or shipping_cost=="|":
                             pass
                         else:
                             break
@@ -350,10 +357,10 @@ def job():
 
     print "I finished the iteration"
 
-schedule.every(5).minutes.do(job)
-
 job()
+
+schedule.every(30).minutes.do(job)
 
 while True:
    schedule.run_pending()
-   time.sleep(15)
+   time.sleep(30)
