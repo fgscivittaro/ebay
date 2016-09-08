@@ -67,7 +67,7 @@ def job():
 
         if ended_listing1 or ended_listing2:
             product_links.remove(url)
-            print "Link removed"
+            print "Link removed" + "\n"
         else:
             #The product's unique item_number. Could be used as a key value.
             item_number = soup.find('div', attrs={'id':'descItemNumber'})
@@ -319,7 +319,7 @@ def job():
             mydate = time.strftime("%m/%d/%Y", localtime())
             mytime = time.strftime("%H:%M:%S", localtime())
 
-        print "\n"
+            print "\n"
 
             with open("product_data.txt", "a") as continued_file:
                 continued_file.write(
@@ -350,9 +350,9 @@ def job():
 
     print "I finished the iteration"
 
-job()
-
 schedule.every(5).minutes.do(job)
+
+job()
 
 while True:
    schedule.run_pending()
