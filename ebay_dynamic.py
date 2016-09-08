@@ -1,6 +1,7 @@
 import requests, time, re, schedule
 from bs4 import BeautifulSoup
 from time import localtime
+from ebay_links import product_links
 
 with open("product_data.txt", "w") as initial_file:
    initial_file.write(
@@ -13,8 +14,6 @@ with open("product_data.txt", "w") as initial_file:
 
 def job():
 #Scrapes an eBay product page and returns the available information and data.
-    from ebay_links import product_links
-
     ended1 = re.compile(r'This listing has ended')
     ended2 = re.compile(r'This listing was ended')
 
@@ -22,6 +21,8 @@ def job():
         soup = BeautifulSoup(requests.get(url).text, 'html.parser')
         ended_listing1 = soup.find(text=ended1)
         ended_listing2 = soup.find(text=ended2)
+
+        print url
 
         if ended_listing1 or ended_listing2:
             product_links.remove(url)
@@ -163,10 +164,14 @@ def job():
 
             print "Trending price: " + trending_price
 
-            #The original price of the product.
+            ##The original price of the product.
             list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
             if list_price:
-               list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'')[1:]
+               list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'')
+               if list_price[:3]=="GBP" or list_price[1]=="C" or list_price[:2]=="AU":
+                   list_price = 'N/A'
+               else:
+                   list_price = list_price.strip()
             else:
                list_price = "N/A"
 
@@ -180,8 +185,12 @@ def job():
                pass
             if you_save:
                you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
-               you_save_raw = you_save[1:-9].strip()
-               you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip()
+               if you_save[:3]=="GBP" or you_save[1]=="C" or you_save[:2]=="AU":
+                   you_save_raw = "N/A"
+                   you_save_percent = "N/A"
+               else:
+                   you_save_raw = you_save[1:-9].strip()
+                   you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip()
             else:
                you_save_raw = "N/A"
                you_save_percent = "N/A"
@@ -263,7 +272,7 @@ def job():
                         shipping.append(i.extract())
                     for i in shipping:
                         shipping_cost = i.get_text().strip()
-                        if shipping_cost=="":
+                        if shipping_cost=="" or shipping_cost=="|":
                             pass
                         else:
                             break
@@ -348,9 +357,11 @@ def job():
                     mydate + "\n"
                     )
 
+    print "I finished the iteration"
+
 job()
 
-schedule.every(30).minutes.do(job)
+schedule.every(5).minutes.do(job)
 
 while True:
    schedule.run_pending()
