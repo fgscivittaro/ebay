@@ -1,6 +1,7 @@
 import requests, time, re, schedule
 from bs4 import BeautifulSoup
 from time import localtime
+from ebay_links import product_links
 
 with open("product_data.txt", "w") as initial_file:
    initial_file.write(
@@ -16,7 +17,7 @@ def job():
     #Featured Collections, and every link within each collection.
     #The current date and time.
     starttime = time.strftime("%H:%M:%S", localtime())
-    print starttime + " - I'm starting the iteration"
+    print starttime + " - I'm starting the iteration" + "\n"
     url1 = 'http://www.ebay.com/'
     ebaysoup = BeautifulSoup(requests.get(url1).text, 'html.parser')
 
@@ -27,13 +28,15 @@ def job():
     for html_code in no_lazy:
         featured_links.append(html_code.find('a').get('href'))
 
-    product_links = []
-    final_links = []
+    new_product_links = []
 
     #Iterates through the link of each Featured Collection.
     for html_url in featured_links:
         html_soup = BeautifulSoup(requests.get(html_url).text, 'html.parser')
-
+        #Iterates through all the URLs found within the HTML code and appends them.
+        item_thumb = html_soup.find_all('div', attrs={'class':'itemThumb'})
+        for html_code in item_thumb:
+            new_product_links.append(html_code.find('a').get('href'))
         #Generates the URL of an xml ajax request responsible for retrieving some
         #but not all of the product links.
         editor = html_url[24:]
@@ -43,34 +46,45 @@ def job():
         lxml_url = 'http://www.ebay.com/cln/_ajax/2/%s/%s' % (editor, col_code)
         limiter = {'itemsPerPage':'30'}
         lxml_soup = BeautifulSoup((requests.get(lxml_url, params=limiter).content), 'lxml')
-
-        #Iterates through all the URLs found within the HTML code and appends them.
-        item_thumb = html_soup.find_all('div', attrs={'class':'itemThumb'})
-        for html_code in item_thumb:
-            product_links.append(html_code.find('a').get('href'))
-
         #Retrieves all the URLs that the xml code is responsible for.
-        final_links = [a["href"] for a in lxml_soup.select("div.itemThumb div.itemImg.image.lazy-image a[href]")]
+        lxml_links = [a["href"] for a in lxml_soup.select("div.itemThumb div.itemImg.image.lazy-image a[href]")]
 
         #Merges the lists and turns them into a set, since there is some overlap.
-        product_links = list(set(product_links + final_links))
-        print str(len(product_links)) + " links scraped"
+        new_product_links = list(set(new_product_links + lxml_links))
+        print str(len(new_product_links)) + " links added"
+
+    linkdict = {}
+
+    for link in product_links:
+        if new_product_links.count(link)==1:
+            linkdict[link] = "Featured"
+        elif new_product_links.count(link)==0:
+            linkdict[link] = "Not featured"
+
+    for link in new_product_links:
+        if product_links.count(link)==1:
+            pass
+        elif product_links.count(link)==0:
+            product_links.append(link)
+            linkdict[link] = "Featured"
+
+    print linkdict
+    print "The dictionary has these many links: " + str(len(linkdict))
+    print "The list has these many links: " + str(len(product_links))
 
     ended1 = re.compile(r'This listing has ended')
     ended2 = re.compile(r'This listing was ended')
 
-    #product_links = product_links[:3]
-
-    for url in product_links:
-        soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    for key in linkdict:
+        soup = BeautifulSoup(requests.get(key).text, 'html.parser')
         ended_listing1 = soup.find(text=ended1)
         ended_listing2 = soup.find(text=ended2)
 
-        print url
+        print key
 
         if ended_listing1 or ended_listing2:
-            product_links.remove(url)
-            print "Link removed" + "\n"
+            product_links.remove(key)
+            print "Link removed. The list now has these many links: " + str(len(product_links)) + "\n"
         else:
             #The product's unique item_number. Could be used as a key value.
             item_number = soup.find('div', attrs={'id':'descItemNumber'})
@@ -329,12 +343,14 @@ def job():
             #The current date and time.
             mydate = time.strftime("%m/%d/%Y", localtime())
             mytime = time.strftime("%H:%M:%S", localtime())
+            featured = linkdict[key]
 
             print "\n"
 
             with open("product_data.txt", "a") as continued_file:
                 continued_file.write(
                     mytime + ";" +
+                    featured + ";" +
                     item_number + ";" +
                     title + ";" +
                     condition + ";" +
@@ -363,8 +379,8 @@ def job():
 
 job()
 
-schedule.every(30).minutes.do(job)
+schedule.every(5).minutes.do(job)
 
 while True:
    schedule.run_pending()
-   time.sleep(30)
+   time.sleep(20)
