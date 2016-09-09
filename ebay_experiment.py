@@ -51,15 +51,17 @@ def job():
 
         #Merges the lists and turns them into a set, since there is some overlap.
         new_product_links = list(set(new_product_links + lxml_links))
-        print str(len(new_product_links)) + " links added"
+        print str(len(new_product_links)) + " links found"
 
     linkdict = {}
 
     for link in product_links:
         if new_product_links.count(link)==1:
             linkdict[link] = "Featured"
+            print "Continues to be featured"
         elif new_product_links.count(link)==0:
             linkdict[link] = "Not featured"
+            print "This link is no longer featured"
 
     for link in new_product_links:
         if product_links.count(link)==1:
@@ -67,8 +69,8 @@ def job():
         elif product_links.count(link)==0:
             product_links.append(link)
             linkdict[link] = "Featured"
+            print "NEW featured link found and added"
 
-    print linkdict
     print "The dictionary has these many links: " + str(len(linkdict))
     print "The list has these many links: " + str(len(product_links))
 
@@ -83,8 +85,7 @@ def job():
         print key
 
         if ended_listing1 or ended_listing2:
-            product_links.remove(key)
-            print "Link removed. The list now has these many links: " + str(len(product_links)) + "\n"
+            print "This listing has already ended" + "\n"
         else:
             #The product's unique item_number. Could be used as a key value.
             item_number = soup.find('div', attrs={'id':'descItemNumber'})
@@ -379,8 +380,8 @@ def job():
 
 job()
 
-schedule.every(5).minutes.do(job)
+schedule.every(25).minutes.do(job)
 
 while True:
    schedule.run_pending()
-   time.sleep(20)
+   time.sleep(30)
