@@ -185,6 +185,8 @@ def job():
                 else:
                    condition = "N/A"
 
+                looking_for_sold = re.compile(r'sold')
+
                 #How many units of the product have already been sold.
                 amount_sold = soup.find('span', attrs={'class':"qtyTxt vi-bboxrev-dsplblk  vi-qty-fixAlignment"})
                 if amount_sold:
@@ -204,7 +206,11 @@ def job():
                        if amount_sold:
                            amount_sold = amount_sold.get_text().strip().replace(u',', u'')[:-5].encode('ascii','replace')
                        else:
-                           amount_sold = "N/A"
+                           amount_sold = soup.find(text=looking_for_sold)
+                           if amount_sold:
+                               amount_sold = amount_sold.strip().replace(u',', u'')[:-5].encode('ascii','replace')
+                           else:
+                               amount_sold = soup.find('div', attrs={'class':"u-flL qtyCntVal vi-bboxrev-posabs vi-bboxrev-dsplinline"})
                 else:
                     pass
 
