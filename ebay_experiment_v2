@@ -210,7 +210,7 @@ def job():
                            if amount_sold:
                                amount_sold = amount_sold.strip().replace(u',', u'')[:-5].encode('ascii','replace')
                            else:
-                               amount_sold = soup.find('div', attrs={'class':"u-flL qtyCntVal vi-bboxrev-posabs vi-bboxrev-dsplinline"})
+                               amount_sold = "N/A"
                 else:
                     pass
 
