@@ -263,7 +263,15 @@ def job():
                 if trending_price:
                    for i in trending_price('div'):
                        i.extract()
-                   trending_price = trending_price.get_text().strip().replace(u',', u'').replace(u'US ', u'')[1:].encode('ascii','replace')
+                   trending_price = trending_price.get_text().strip().replace(u',', u'').encode('ascii','replace')
+                   if trending_price[0]=="$":
+                       trending_price = trending_price.replace(u'$',u'').strip()
+                   elif trending_price[:2]=="US":
+                       trending_price = trending_price.replace(u'US ', u'').replace(u'$',u'').strip()
+                   elif trending_price[:3]=="GBP" or trending_price[1]=="C" or trending_price[:2]=="AU" or trending_price[:3]=="EUR":
+                       trending_price = "Foreign currency"
+                   else:
+                       trending_price = "Unknown currency"
                 else:
                    trending_price = "N/A"
 
