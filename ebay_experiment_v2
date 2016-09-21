@@ -23,7 +23,7 @@ def job():
     #Scrapes the eBay home page and returns a list of links from the home page's
     #Featured Collections, and every link within each collection.
     #The current date and time.
-    from ebay_experiment import bad_links
+    from ebay_experiment_v2 import bad_links
     starttime = time.strftime("%H:%M:%S", localtime())
     print starttime + " - I'm starting the iteration" + "\n"
     url1 = 'http://www.ebay.com/'
