@@ -198,7 +198,6 @@ def job():
                 else:
                    amount_sold = "N/A"
 
-
                 why_to_buy = soup.find('div', attrs={'id':'why2buy'})
                 if why_to_buy:
                     sold_pattern = re.compile(r'More than')
@@ -272,8 +271,10 @@ def job():
                 list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
                 if list_price:
                    list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'').encode('ascii','replace')
-                   if list_price[:3]=="GBP" or list_price[1]=="C" or list_price[:2]=="AU":
-                       list_price = 'N/A'
+                   if list_price=="":
+                       list_price = "N/A"
+                   elif list_price[:3]=="GBP" or list_price[1]=="C" or list_price[:2]=="AU" or list_price[:3]=="EUR":
+                       list_price = 'Foreign currency'
                    else:
                        list_price = list_price.strip().encode('ascii','replace')
                 else:
@@ -287,7 +288,10 @@ def job():
                    pass
                 if you_save:
                    you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
-                   if you_save[:3]=="GBP" or you_save[1]=="C" or you_save[:2]=="AU":
+                   if you_save=="(% off)":
+                       you_save_raw = "N/A"
+                       you_save_percent = "N/A"
+                   elif you_save[:3]=="GBP" or you_save[1]=="C" or you_save[:2]=="AU" or you_save[:3]=="EUR":
                        you_save_raw = "N/A"
                        you_save_percent = "N/A"
                    else:
@@ -305,7 +309,9 @@ def job():
                    pass
                 if now_price:
                    now_price = now_price.get_text().replace(u',', u'').encode('ascii','replace')
-                   if now_price[:3]=="GBP":
+                   if now_price[:2]=="US":
+                       now_price = now_price[4:].encode('ascii','replace')
+                   elif now_price[:3]=="GBP":
                        now_price = soup.find('span', attrs={'id':'convbinPrice'})
                        if now_price:
                            for i in now_price('span'):
@@ -338,15 +344,26 @@ def job():
                            for i in now_price('span'):
                               i.extract()
                            now_price = now_price.get_text()[4:].encode('ascii','replace')
+                   elif now_price[:3]=="EUR":
+                       now_price = soup.find('span', attrs={'id':'convbinPrice'})
+                       if now_price:
+                           for i in now_price('span'):
+                              i.extract()
+                           now_price = now_price.get_text()[4:].encode('ascii','replace')
+                       else:
+                           now_price = soup.find('span', attrs={'id':'convbidPrice'})
+                           for i in now_price('span'):
+                              i.extract()
+                           now_price = now_price.get_text()[4:].encode('ascii','replace')
                    else:
-                       now_price = now_price[4:].encode('ascii','replace')
+                       now_price = "Unknown currency"
                 else:
                    now_price = "N/A"
 
                 #The product's shipping costs.
                 shipping_cost = soup.find('span', attrs={'id':'fshippingCost'})
                 if shipping_cost:
-                    shipping_cost = shipping_cost.get_text().replace(u',', u'').replace(u'$', u'').strip().encode('ascii','replace')
+                    shipping_cost = shipping_cost.get_text().replace(u',', u'').strip().encode('ascii','replace')
                     if shipping_cost[:3]=="GBP":
                         shipping_cost = soup.find('span', attrs={'id':'convetedPriceId'})
                         shipping_cost = shipping_cost.get_text()[4:]
@@ -356,11 +373,15 @@ def job():
                     elif shipping_cost[:2]=="AU":
                         shipping_cost = soup.find('span', attrs={'id':'convetedPriceId'})
                         shipping_cost = shipping_cost.get_text()[4:]
+                    elif shipping_cost[:3]=="EUR":
+                        shipping_cost = soup.find('span', attrs={'id':'convetedPriceId'})
+                        shipping_cost = shipping_cost.get_text()[4:]
+                    elif shipping_cost=="FREE":
+                        shipping_cost = "0.00"
+                    elif shipping_cost[0]=="$":
+                        shipping_cost = shipping_cost.replace(u'$',u'')
                     else:
-                        if shipping_cost=="FREE":
-                           shipping_cost = "0.00"
-                        else:
-                           pass
+                        shipping_cost = "Unknown currency"
                 else:
                     shipping_cost = soup.find('span', attrs={'id':'shSummary'})
                     if shipping_cost:
@@ -409,7 +430,6 @@ def job():
                        pass
                 else:
                    return_policy = "N/A"
-
 
                 featured = linkdict[key]
 
