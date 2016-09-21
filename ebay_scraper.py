@@ -93,7 +93,7 @@ def product(url):
     print "Condition: " + condition
 
     #How many units of the product have already been sold.
-    amount_sold = soup.find('span', attrs={'class':"qtyTxt vi-bboxrev-dsplblk  vi-qty-fixAlignment"})
+    amount_sold = soup.find('span', attrs={'class':["qtyTxt", "vi-bboxrev-dsplblk", "vi-qty-fixAlignment"]})
     if amount_sold:
        amount_sold = amount_sold.find('a')
        if amount_sold:
