@@ -197,22 +197,7 @@ def job():
                        amount_sold = "N/A"
                 else:
                    amount_sold = "N/A"
-                if amount_sold=="N/A":
-                   amount_sold = soup.find('span', attrs={'class':"vi-qtyS vi-bboxrev-dsplblk vi-qty-vert-algn vi-qty-pur-lnk"})
-                   if amount_sold:
-                       amount_sold = amount_sold.get_text().strip().replace(u',', u'')[:-5].encode('ascii','replace')
-                   else:
-                       amount_sold = soup.find('span', attrs={'class':"vi-qtyS-hot-red  vi-bboxrev-dsplblk vi-qty-vert-algn vi-qty-pur-lnk"})
-                       if amount_sold:
-                           amount_sold = amount_sold.get_text().strip().replace(u',', u'')[:-5].encode('ascii','replace')
-                       else:
-                           amount_sold = soup.find(text=looking_for_sold)
-                           if amount_sold:
-                               amount_sold = amount_sold.strip().replace(u',', u'')[:-5].encode('ascii','replace')
-                           else:
-                               amount_sold = "N/A"
-                else:
-                    pass
+
 
                 why_to_buy = soup.find('div', attrs={'id':'why2buy'})
                 if why_to_buy:
