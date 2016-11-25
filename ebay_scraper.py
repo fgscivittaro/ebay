@@ -7,22 +7,70 @@ import re
 from bs4 import BeautifulSoup
 from time import localtime
 
+
+def find_all_product_info(url, num_retries = 10):
+    """
+    Returns all the information for a product in a dict
+
+    Inputs:
+        url: the product url
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
+
+    Returns: a dict containing all the product's information
+    """
+
+    soup = get_soup(url, num_retries)
+
+    date, time = date_and_time()
+    discount_raw, discount_percent = product_discount(soup)
+
+    product_dict = {
+    'Date': date,
+    'Time': time,
+    'Item ID': item_number(soup),
+    'Title': title(soup),
+    'Product Rating': product_rating(soup),
+    'Total Ratings': total_ratings(soup),
+    'Username': username(soup),
+    'Seller Reviews': seller_reviews(soup),
+    'Seller Feedback': seller_feedback(soup),
+    'Hot Info': hot_info(soup),
+    'Condition': condition(soup),
+    'Amount Sold': amount_sold(soup),
+    'Amount Available': amount_available(soup),
+    'Inquiries': inquiries(soup),
+    'Trending Price': trending_price(soup),
+    'List Price': list_price(soup),
+    'Product Discount ($)': discount_raw,
+    'Product Discount (%)': discount_percent,
+    'Current Price': current_price(soup),
+    'Shipping Cost': shipping_cost(soup),
+    'Users Watching': users_watching(soup),
+    'Item Location': item_location(soup),
+    'Delivery Date': delivery_date(soup),
+    'Return Policy': return_policy(soup)
+    }
+
+    return product_dict
+
+
 def get_soup(url, num_retries = 10):
     """
     Takes in a url and returns the parsed BeautifulSoup code for that url with
     handling capabilities if the request 'bounces'.
-    
+
     Inputs:
         url: the url to be parsed
         num_retries: (default set to 10) the maximum number of retries in the case of 'bounces'
             before a fatal error is triggered.
-            
+
     Returns:
         BeautifulSoup code for the url
     """
-    
+
     s = requests.Session()
-    
+
     retries = Retry(
         total = num_retries,
         backoff_factor = 0.1,
@@ -36,18 +84,18 @@ def get_soup(url, num_retries = 10):
 
 def date_and_time():
     # Returns the current date and time as a tuple (date, time)
-    
+
     mydate = time.strftime("%m/%d/%Y", localtime())
     mytime = time.strftime("%H:%M:%S", localtime())
-    
+
     return (mydate, mytime)
 
 
 def item_number(soup):
     # Returns the product's unique item_number
-    
+
     item_number = soup.find('div', attrs = {'id':'descItemNumber'})
-    
+
     if item_number:
         item_number = item_number.get_text()
     else:
@@ -58,9 +106,9 @@ def item_number(soup):
 
 def title(soup):
     # Returns the product title. If there is an unknown character in the title, it returns it as '?'.
-    
+
     title = soup.find('h1', attrs = {'class':'it-ttl'})
-    
+
     if title:
         for i in title('span'):
            i.extract()
@@ -73,22 +121,22 @@ def title(soup):
 
 def product_rating(soup):
     # Returns the product's rating, which is an int from 0 to 5 (five stars)
-    
+
     product_rating = soup.find('span', attrs = {'class':'reviews-seeall-hdn'})
-    
+
     if product_rating:
        product_rating = product_rating.get_text().replace(u'\xa0', u' ')[:3]
     else:
        product_rating = 'N/A'
-    
+
     return product_rating
 
 
 def total_ratings(soup):
     # Returns the total number of ratings the product has received
-    
+
     total_ratings = soup.find('a', attrs = {'class':"prodreview vi-VR-prodRev"})
-    
+
     if total_ratings:
        total_ratings = total_ratings.get_text().replace(u',', u'').replace(u'product', u'')[:-7].strip()
     else:
@@ -99,11 +147,11 @@ def total_ratings(soup):
 
 def username(soup):
     # Returns the seller's eBay username
-    
+
     username = soup.find('span', attrs = {'class':'mbg-nw'})
-    
+
     if username:
-       username = seller_name.get_text()
+       username = username.get_text()
     else:
        username = 'N/A'
 
@@ -114,7 +162,7 @@ def seller_reviews(soup):
     # Returns the total number of reviews the seller has received
 
     seller_reviews = soup.find('span', attrs = {'class':'mbg-l'})
-    
+
     if seller_reviews:
        seller_reviews = seller_reviews.find('a').get_text()
     else:
@@ -125,9 +173,9 @@ def seller_reviews(soup):
 
 def seller_feedback(soup):
     # Returns the seller's positive feedback rating, given as a percent
-    
+
     seller_feedback = soup.find('div', attrs = {'id':'si-fb'})
-    
+
     if seller_feedback:
        seller_feedback = seller_feedback.get_text().replace(u'\xa0', u' ')[:-19]
     else:
@@ -139,9 +187,9 @@ def seller_feedback(soup):
 def hot_info(soup):
     # Returns the information given by eBay next to the "fire" emblem under the title.
     # This information is chosen by eBay and varies greatly
-    
+
     hot_info = soup.find('div', attrs = {'id':'vi_notification_new'})
-    
+
     if hot_info:
        hot_info = hot_info.get_text().strip().replace(u',', u'')
     else:
@@ -152,9 +200,9 @@ def hot_info(soup):
 
 def condition(soup):
     # Returns the declared condition of the item
-    
+
     condition = soup.find('div', attrs = {'class':"u-flL condText  "})
-    
+
     if condition:
         for i in condition('span'):
             condition = i.extract()
@@ -167,9 +215,9 @@ def condition(soup):
 
 def amount_sold(soup):
     # Returns how many units of the product have been sold
-    
+
     amount_sold = soup.find('span', attrs = {'class':["qtyTxt", "vi-bboxrev-dsplblk", "vi-qty-fixAlignment"]})
-    
+
     if amount_sold:
        amount_sold_link = amount_sold.find('a')
        if amount_sold_link:
@@ -184,9 +232,9 @@ def amount_sold(soup):
 
 def amount_available(soup):
     # Returns how many available units of the product are left
-    
+
     amount_available = soup.find('span', attrs = {'id':'qtySubTxt'})
-    
+
     if amount_available:
        amount_available = amount_available.get_text().strip()
        if amount_available == "More than 10 available":
@@ -203,10 +251,10 @@ def amount_available(soup):
 
 def inquiries(soup):
     # Returns the number of inquiries, if the information is displayed
-    
+
     pattern = re.compile(r'inquiries')
     inquiries = soup.find(text=pattern)
-    
+
     if inquiries:
        inquiries = inquiries.replace(u',', u'')[:-10]
     else:
@@ -217,9 +265,9 @@ def inquiries(soup):
 
 def trending_price(soup):
     # Returns the trending price of the product
-    
+
     trending_price = soup.find('div', attrs = {'class':'u-flL vi-bbox-posTop2 '})
-    
+
     if trending_price:
        for i in trending_price('div'):
            i.extract()
@@ -232,9 +280,9 @@ def trending_price(soup):
 
 def list_price(soup):
     # Returns the original price of the product
-    
+
     list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
-    
+
     if list_price:
        list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'')
        if list_price[:3] == "GBP" or list_price[1] == "C" or list_price[:2] == "AU":
@@ -249,9 +297,9 @@ def list_price(soup):
 
 def product_discount(soup):
     # Returns the product discount as a tuple (raw amount, percent amount)
-    
+
     you_save = soup.find('span', attrs = {'id':'youSaveSTP'})
-    
+
     if not you_save:
        you_save = soup.find('div', attrs = {'id':'mm-saleAmtSavedPrc'})
 
@@ -272,15 +320,15 @@ def product_discount(soup):
 
 def current_price(soup):
     # Returns the product's current price, after discounts
-    
+
     now_price = soup.find('span', attrs = {'id':'prcIsum'})
-    
+
     if not now_price:
        now_price = soup.find('span', attrs = {'id':'mm-saleDscPrc'})
 
     if now_price:
        now_price = now_price.get_text().replace(u',', u'')
-    
+
        if now_price[:3] == "GBP":
            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
            if now_price:
@@ -292,9 +340,9 @@ def current_price(soup):
                for i in now_price('span'):
                   i.extract()
                now_price = now_price.get_text()[4:]
-            
-            return now_price
-            
+
+           return now_price
+
        elif now_price[1] == "C":
            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
            if now_price:
@@ -306,9 +354,9 @@ def current_price(soup):
                for i in now_price('span'):
                   i.extract()
                now_price = now_price.get_text()[4:]
-            
-            return now_price
-            
+
+           return now_price
+
        elif now_price[:2] == "AU":
            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
            if now_price:
@@ -320,36 +368,36 @@ def current_price(soup):
                for i in now_price('span'):
                   i.extract()
                now_price = now_price.get_text()[4:]
-            
-            return now_price
-            
+
+           return now_price
+
        else:
            return now_price[4:]
-        
+
     else:
        return "N/A"
 
 
 def shipping_cost(soup):
     # Returns the product's shipping costs
-    
+
     shipping_cost = soup.find('span', attrs = {'id':'fshippingCost'})
-    
+
     if shipping_cost:
         shipping_cost = shipping_cost.get_text().replace(u',', u'').replace(u'$', u'').strip()
-        
+
         if shipping_cost[:3] == "GBP":
             shipping_cost = soup.find('span', attrs = {'id':'convetedPriceId'})
             return shipping_cost.get_text()[4:]
-        
+
         elif shipping_cost[1] == "C":
             shipping_cost = soup.find('span', attrs = {'id':'convetedPriceId'})
             return shipping_cost.get_text()[4:]
-        
+
         elif shipping_cost[:2] == "AU":
             shipping_cost = soup.find('span', attrs = {'id':'convetedPriceId'})
             return shipping_cost.get_text()[4:]
-        
+
         else:
             if shipping_cost == "FREE":
                return "0.00"
@@ -367,12 +415,12 @@ def shipping_cost(soup):
         else:
             return "N/A"
 
-        
+
 def users_watching(soup):
     # Returns the total number of users watching the product
-    
+
     total_watching = soup.find('span', attrs = {'class':'vi-buybox-watchcount'})
-    
+
     if total_watching:
        total_watching = total_watching.get_text().replace(u',', u'')
     else:
@@ -383,9 +431,9 @@ def users_watching(soup):
 
 def item_location(soup):
     # Returns the seller's location--where the item will be shipped from
-    
+
     item_location = soup.find('div', attrs = {'class':'iti-eu-bld-gry'})
-    
+
     if item_location:
        item_location = item_location.get_text().strip()
     else:
@@ -397,9 +445,9 @@ def item_location(soup):
 def delivery_date(soup):
     # Returns the estimated date at which the product will be delivered to the DFW area
     # NOTE: the delivery date is calculated using the location of the computer that makes the page request
-    
+
     delivery_date = soup.find('span', attrs = {'class':'vi-acc-del-range'})
-    
+
     if delivery_date:
        delivery_date = delivery_date.get_text().replace(u'and', u'-')
     else:
@@ -410,9 +458,9 @@ def delivery_date(soup):
 
 def return_policy(soup):
     # Returns the return policy offered by the seller
-    
+
     return_policy = soup.find('span', attrs = {'id':'vi-ret-accrd-txt'})
-    
+
     if return_policy:
        return_policy = return_policy.get_text().replace(u'\xa0', u' ').strip()
        if len(return_policy) > 79:
