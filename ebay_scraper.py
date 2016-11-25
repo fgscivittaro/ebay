@@ -6,8 +6,23 @@ from time import localtime
 
 def get_soup(url):
     # Enters the url into BeautifulSoup ad returns the parsed HTML code
+    
+    s = requests.Session()
+    
+    """
+    Acts as protection against instances in which the request 'bounces' by
+    retrying up to ten times before triggering a fatal error.
+    """
+    
+    retries = Retry(
+        total=10,
+        backoff_factor = 0.1,
+        status_forcelist=[ 500, 502, 503, 504 ]
+        )
 
-    return BeautifulSoup(requests.get(url).text, 'html.parser')
+    s.mount('http://', HTTPAdapter(max_retries=retries))
+
+    return BeautifulSoup(s.get(url).text, 'html.parser')
 
 
 def item_number(soup):
