@@ -1,23 +1,35 @@
-import requests, time, re
+import requests
+import time
+import re
 from bs4 import BeautifulSoup
 from time import localtime
 
-def product(url):
-#Scrapes an eBay product page and returns the available information and data.
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    print url
+def get_soup(url):
+# Enters the url into BeautifulSoup ad returns the parsed HTML code
 
-    #The product's unique item_number. Could be used as a key value.
+    return BeautifulSoup(requests.get(url).text, 'html.parser')
+
+
+def item_number(url):
+    #Returns the product's unique item_number
+    
+    soup = get_soup(url)
     item_number = soup.find('div', attrs={'id':'descItemNumber'})
+    
     if item_number:
         item_number = item_number.get_text()
     else:
         item_number = "N/A"
 
-    print "Item number: " + item_number
+    return item_number
 
-    #The product title.
+
+def title(url):
+    #Returns the product title. If there is an unknown character in the title, it returns it as '?'.
+    
+    soup = get_soup(url)
     title = soup.find('h1', attrs={'class':'it-ttl'})
+    
     if title:
         for i in title('span'):
            i.extract()
@@ -25,7 +37,7 @@ def product(url):
     else:
         title = "N/A"
 
-    print "Title: " + title
+    return title
 
     #The product's rating, out of five stars.
     item_rating = soup.find('span', attrs={'class':'reviews-seeall-hdn'})
