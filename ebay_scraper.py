@@ -24,6 +24,7 @@ def find_all_product_info(url, num_retries = 10):
 
     date, time = date_and_time()
     discount_raw, discount_percent = product_discount(soup)
+    reason1, reason2, reason3 = three_reasons(soup)
 
     product_dict = {
     'Date': date,
@@ -38,6 +39,10 @@ def find_all_product_info(url, num_retries = 10):
     'Hot Info': hot_info(soup),
     'Condition': condition(soup),
     'Amount Sold': amount_sold(soup),
+    'Percent Sold': percent_sold(soup),
+    'First Reason': reason1,
+    'Second Reason': reason2,
+    'Third Reason': reason3,
     'Amount Available': amount_available(soup),
     'Inquiries': inquiries(soup),
     'Trending Price': trending_price(soup),
@@ -62,8 +67,8 @@ def get_soup(url, num_retries = 10):
 
     Inputs:
         url: the url to be parsed
-        num_retries: (default set to 10) the maximum number of retries in the case of 'bounces'
-            before a fatal error is triggered.
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
 
     Returns:
         BeautifulSoup code for the url
@@ -74,7 +79,7 @@ def get_soup(url, num_retries = 10):
     retries = Retry(
         total = num_retries,
         backoff_factor = 0.1,
-        status_forcelist = [ 500, 502, 503, 504 ]
+        status_forcelist = [500, 502, 503, 504]
         )
 
     s.mount('http://', HTTPAdapter(max_retries = retries))
@@ -105,7 +110,8 @@ def item_number(soup):
 
 
 def title(soup):
-    # Returns the product title. If there is an unknown character in the title, it returns it as '?'.
+    # Returns the product title. If there is an unknown character in the title,
+    # it returns it as '?'.
 
     title = soup.find('h1', attrs = {'class':'it-ttl'})
 
@@ -151,7 +157,7 @@ def username(soup):
     username = soup.find('span', attrs = {'class':'mbg-nw'})
 
     if username:
-       username = username.get_text()
+       username = username.get_text().encode('ascii','replace')
     else:
        username = 'N/A'
 
@@ -185,13 +191,13 @@ def seller_feedback(soup):
 
 
 def hot_info(soup):
-    # Returns the information given by eBay next to the "fire" emblem under the title.
-    # This information is chosen by eBay and varies greatly
+    # Returns the information given by eBay next to the "fire" emblem under
+    # the title. This information is chosen by eBay and varies greatly.
 
     hot_info = soup.find('div', attrs = {'id':'vi_notification_new'})
 
     if hot_info:
-       hot_info = hot_info.get_text().strip().replace(u',', u'')
+       hot_info = hot_info.get_text().strip().replace(u',', u'').encode('ascii','replace')
     else:
        hot_info = "N/A"
 
@@ -216,7 +222,8 @@ def condition(soup):
 def amount_sold(soup):
     # Returns how many units of the product have been sold
 
-    amount_sold = soup.find('span', attrs = {'class':["qtyTxt", "vi-bboxrev-dsplblk", "vi-qty-fixAlignment"]})
+    amount_sold = soup.find('span',
+    attrs = {'class':["qtyTxt", "vi-bboxrev-dsplblk", "vi-qty-fixAlignment"]})
 
     if amount_sold:
        amount_sold_link = amount_sold.find('a')
@@ -228,6 +235,46 @@ def amount_sold(soup):
        amount_sold = "N/A"
 
     return amount_sold
+
+
+def percent_sold(soup):
+    # Returns the percent of inventory sold, if it is made available
+
+    why_to_buy = soup.find('div', attrs = {'id':'why2buy'})
+
+    if why_to_buy:
+        # Specifically looks for information following the format:
+        # "More than X% sold"
+        sold_pattern = re.compile(r'More than')
+        percent_sold = why_to_buy.find(text = sold_pattern)
+
+        if percent_sold:
+            percent_sold = percent_sold.replace(u'More than ',u'').replace(u'% ',u'').replace(u'sold',u'').encode('ascii','replace')
+        else:
+            percent_sold = "N/A"
+
+    return percent_sold
+
+
+def three_reasons(soup):
+    """
+    Takes in the eBay page's soup code and parses it for the (up to) three reasons
+    eBay lists for why the buyer should buy
+
+    Inputs: the soup code
+
+    Returns: a tuple (reason1, reason2, reason3) for each reason listed by eBay
+    """
+
+    why_to_buy = soup.find('div', attrs = {'id':'why2buy'})
+    all_reasons = why_to_buy.find_all('span', attrs = {'class':'w2b-sgl'})
+    reasons = ["N/A"] * 3
+
+    for i, reason in enumerate(all_reasons):
+        clean_reason = reason.get_text().encode('ascii','replace')
+        reasons[i] = clean_reason
+
+    return (reasons[0], reasons[1], reasons[2])
 
 
 def amount_available(soup):
@@ -253,7 +300,7 @@ def inquiries(soup):
     # Returns the number of inquiries, if the information is displayed
 
     pattern = re.compile(r'inquiries')
-    inquiries = soup.find(text=pattern)
+    inquiries = soup.find(text = pattern)
 
     if inquiries:
        inquiries = inquiries.replace(u',', u'')[:-10]
@@ -271,7 +318,15 @@ def trending_price(soup):
     if trending_price:
        for i in trending_price('div'):
            i.extract()
-       trending_price = trending_price.get_text().strip().replace(u',', u'').replace(u'US ', u'')[1:]
+       trending_price = trending_price.get_text().strip().replace(u',', u'').encode('ascii','replace')
+       if trending_price[0] == "$":
+           trending_price = trending_price.replace(u'$',u'').strip()
+       elif trending_price[:2] == "US":
+           trending_price = trending_price.replace(u'US ', u'').replace(u'$',u'').strip()
+       elif trending_price[:3] == "GBP" or trending_price[1] == "C" or trending_price[:2] == "AU" or trending_price[:3] == "EUR":
+           trending_price = "Foreign currency"
+       else:
+           trending_price = "Unknown currency"
     else:
        trending_price = "N/A"
 
@@ -281,14 +336,16 @@ def trending_price(soup):
 def list_price(soup):
     # Returns the original price of the product
 
-    list_price = soup.find('span', attrs={'id':['orgPrc', 'mm-saleOrgPrc']})
+    list_price = soup.find('span', attrs = {'id':['orgPrc', 'mm-saleOrgPrc']})
 
     if list_price:
-       list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'')
-       if list_price[:3] == "GBP" or list_price[1] == "C" or list_price[:2] == "AU":
-           list_price = 'N/A'
+       list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'').encode('ascii','replace')
+       if list_price == "":
+           list_price = "N/A"
+       elif list_price[:3] == "GBP" or list_price[1] == "C" or list_price[:2] == "AU" or list_price[:3] == "EUR":
+           list_price = 'Foreign currency'
        else:
-           list_price = list_price.strip()
+           list_price = list_price.strip().encode('ascii','replace')
     else:
        list_price = "N/A"
 
@@ -305,12 +362,15 @@ def product_discount(soup):
 
     if you_save:
        you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
-       if you_save[:3] == "GBP" or you_save[1] == "C" or you_save[:2] == "AU":
+       if you_save == "(% off)":
+           you_save_raw = "N/A"
+           you_save_percent = "N/A"
+       elif you_save[:3] == "GBP" or you_save[1] == "C" or you_save[:2] == "AU" or you_save[:3] == "EUR":
            you_save_raw = "N/A"
            you_save_percent = "N/A"
        else:
-           you_save_raw = you_save[1:-9].strip()
-           you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip()
+           you_save_raw = you_save[1:-9].strip().encode('ascii','replace')
+           you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip().encode('ascii','replace')
     else:
        you_save_raw = "N/A"
        you_save_percent = "N/A"
@@ -324,58 +384,67 @@ def current_price(soup):
     now_price = soup.find('span', attrs = {'id':'prcIsum'})
 
     if not now_price:
-       now_price = soup.find('span', attrs = {'id':'mm-saleDscPrc'})
+        now_price = soup.find('span', attrs = {'id':'mm-saleDscPrc'})
 
     if now_price:
-       now_price = now_price.get_text().replace(u',', u'')
+        now_price = now_price.get_text().replace(u',', u'').encode('ascii','replace')
 
-       if now_price[:3] == "GBP":
-           now_price = soup.find('span', attrs = {'id':'convbinPrice'})
-           if now_price:
-               for i in now_price('span'):
-                  i.extract()
-               now_price = now_price.get_text()[4:]
-           else:
-               now_price = soup.find('span', attrs = {'id':'convbidPrice'})
-               for i in now_price('span'):
-                  i.extract()
-               now_price = now_price.get_text()[4:]
+        if now_price[:2] == "US":
+            now_price = now_price[4:].encode('ascii','replace')
 
-           return now_price
+        elif now_price[:3] == "GBP":
+            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
+            if now_price:
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
+            else:
+                now_price = soup.find('span', attrs={'id':'convbidPrice'})
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
 
-       elif now_price[1] == "C":
-           now_price = soup.find('span', attrs = {'id':'convbinPrice'})
-           if now_price:
-               for i in now_price('span'):
-                  i.extract()
-               now_price = now_price.get_text()[4:]
-           else:
-               now_price = soup.find('span', attrs = {'id':'convbidPrice'})
-               for i in now_price('span'):
-                  i.extract()
-               now_price = now_price.get_text()[4:]
+        elif now_price[1] == "C":
+            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
+            if now_price:
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
+            else:
+                now_price = soup.find('span', attrs = {'id':'convbidPrice'})
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
 
-           return now_price
+        elif now_price[:2] == "AU":
+            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
+            if now_price:
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
+            else:
+                now_price = soup.find('span', attrs = {'id':'convbidPrice'})
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
 
-       elif now_price[:2] == "AU":
-           now_price = soup.find('span', attrs = {'id':'convbinPrice'})
-           if now_price:
-               for i in now_price('span'):
-                  i.extract()
-               now_price = now_price.get_text()[4:]
-           else:
-               now_price = soup.find('span', attrs = {'id':'convbidPrice'})
-               for i in now_price('span'):
-                  i.extract()
-               now_price = now_price.get_text()[4:]
-
-           return now_price
-
-       else:
-           return now_price[4:]
-
+        elif now_price[:3] == "EUR":
+            now_price = soup.find('span', attrs = {'id':'convbinPrice'})
+            if now_price:
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
+            else:
+                now_price = soup.find('span', attrs = {'id':'convbidPrice'})
+                for i in now_price('span'):
+                    i.extract()
+                now_price = now_price.get_text()[4:].encode('ascii','replace')
+        else:
+            now_price = "Unknown currency"
     else:
-       return "N/A"
+        now_price = "N/A"
+
+    return now_price
 
 
 def shipping_cost(soup):
@@ -384,36 +453,37 @@ def shipping_cost(soup):
     shipping_cost = soup.find('span', attrs = {'id':'fshippingCost'})
 
     if shipping_cost:
-        shipping_cost = shipping_cost.get_text().replace(u',', u'').replace(u'$', u'').strip()
-
-        if shipping_cost[:3] == "GBP":
+        shipping_cost = shipping_cost.get_text().replace(u',', u'').strip().encode('ascii','replace')
+        if shipping_cost[:3] == "GBP" or shipping_cost[1] == "C" or shipping_cost[:2] == "AU" or shipping_cost[:3] == "EUR":
             shipping_cost = soup.find('span', attrs = {'id':'convetedPriceId'})
-            return shipping_cost.get_text()[4:]
-
-        elif shipping_cost[1] == "C":
-            shipping_cost = soup.find('span', attrs = {'id':'convetedPriceId'})
-            return shipping_cost.get_text()[4:]
-
-        elif shipping_cost[:2] == "AU":
-            shipping_cost = soup.find('span', attrs = {'id':'convetedPriceId'})
-            return shipping_cost.get_text()[4:]
-
+            shipping_cost = shipping_cost.get_text()[4:]
+        elif shipping_cost == "FREE":
+            shipping_cost = "0.00"
+        elif shipping_cost[0] == "$":
+            shipping_cost = shipping_cost.replace(u'$',u'')
         else:
-            if shipping_cost == "FREE":
-               return "0.00"
-
+            shipping_cost = "Unknown currency"
     else:
+        """
+        Sometimes the shipping cost is not given, and some supplementary
+        information such as "Local pickup" is given. In this case, the scraper
+        performs a naive search for the first bit of information that seems
+        relevant.
+        """
+
         shipping_cost = soup.find('span', attrs = {'id':'shSummary'})
         if shipping_cost:
             shipping = []
             for i in shipping_cost('span'):
                 shipping.append(i.extract())
             for i in shipping:
-                shipping_cost = i.get_text().strip()
+                shipping_cost = i.get_text().strip().encode('ascii','replace')
                 if shipping_cost != "" and shipping_cost != "|":
-                    return shipping_cost
+                    break
         else:
-            return "N/A"
+            shipping_cost = "N/A"
+
+    return shipping_cost
 
 
 def users_watching(soup):
@@ -435,7 +505,7 @@ def item_location(soup):
     item_location = soup.find('div', attrs = {'class':'iti-eu-bld-gry'})
 
     if item_location:
-       item_location = item_location.get_text().strip()
+       item_location = item_location.get_text().strip().encode('ascii','replace')
     else:
        item_location = "N/A"
 
@@ -443,13 +513,13 @@ def item_location(soup):
 
 
 def delivery_date(soup):
-    # Returns the estimated date at which the product will be delivered to the DFW area
-    # NOTE: the delivery date is calculated using the location of the computer that makes the page request
+    # Returns the estimated date at which the product will be delivered to the
+    # the location of the computer that makes the page request.
 
     delivery_date = soup.find('span', attrs = {'class':'vi-acc-del-range'})
 
     if delivery_date:
-       delivery_date = delivery_date.get_text().replace(u'and', u'-')
+       delivery_date = delivery_date.get_text().replace(u'and', u'-').encode('ascii','replace')
     else:
        delivery_date = "N/A"
 
@@ -462,10 +532,10 @@ def return_policy(soup):
     return_policy = soup.find('span', attrs = {'id':'vi-ret-accrd-txt'})
 
     if return_policy:
-       return_policy = return_policy.get_text().replace(u'\xa0', u' ').strip()
+       return_policy = return_policy.get_text().replace(u'\xa0', u' ').strip().encode('ascii','replace')
        if len(return_policy) > 79:
+           # This is done for aesthetic reasons, in case the description is wordy
            return_policy = return_policy[:79] + "..."
-
     else:
        return_policy = "N/A"
 
