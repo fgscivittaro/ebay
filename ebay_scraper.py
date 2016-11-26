@@ -132,9 +132,9 @@ def product_rating(soup):
     product_rating = soup.find('span', attrs = {'class':'reviews-seeall-hdn'})
 
     if product_rating:
-       product_rating = product_rating.get_text().replace(u'\xa0', u' ')[:3]
+        product_rating = product_rating.get_text().replace(u'\xa0', u' ')[:3]
     else:
-       product_rating = 'N/A'
+        product_rating = 'N/A'
 
     return product_rating
 
@@ -145,9 +145,9 @@ def total_ratings(soup):
     total_ratings = soup.find('a', attrs = {'class':"prodreview vi-VR-prodRev"})
 
     if total_ratings:
-       total_ratings = total_ratings.get_text().replace(u',', u'').replace(u'product', u'')[:-7].strip()
+        total_ratings = total_ratings.get_text().replace(u',', u'').replace(u'product', u'')[:-7].strip()
     else:
-       total_ratings = '0'
+        total_ratings = '0'
 
     return total_ratings
 
@@ -158,9 +158,9 @@ def username(soup):
     username = soup.find('span', attrs = {'class':'mbg-nw'})
 
     if username:
-       username = username.get_text().encode('ascii','replace')
+        username = username.get_text().encode('ascii','replace')
     else:
-       username = 'N/A'
+        username = 'N/A'
 
     return username
 
@@ -171,9 +171,9 @@ def seller_reviews(soup):
     seller_reviews = soup.find('span', attrs = {'class':'mbg-l'})
 
     if seller_reviews:
-       seller_reviews = seller_reviews.find('a').get_text()
+        seller_reviews = seller_reviews.find('a').get_text()
     else:
-       seller_reviews = "N/A"
+        seller_reviews = "N/A"
 
     return seller_reviews
 
@@ -184,9 +184,9 @@ def seller_feedback(soup):
     seller_feedback = soup.find('div', attrs = {'id':'si-fb'})
 
     if seller_feedback:
-       seller_feedback = seller_feedback.get_text().replace(u'\xa0', u' ')[:-19]
+        seller_feedback = seller_feedback.get_text().replace(u'\xa0', u' ')[:-19]
     else:
-       seller_feedback = "N/A"
+        seller_feedback = "N/A"
 
     return seller_feedback
 
@@ -198,9 +198,9 @@ def hot_info(soup):
     hot_info = soup.find('div', attrs = {'id':'vi_notification_new'})
 
     if hot_info:
-       hot_info = hot_info.get_text().strip().replace(u',', u'').encode('ascii','replace')
+        hot_info = hot_info.get_text().strip().replace(u',', u'').encode('ascii','replace')
     else:
-       hot_info = "N/A"
+        hot_info = "N/A"
 
     return hot_info
 
@@ -215,7 +215,7 @@ def condition(soup):
             condition = i.extract()
         condition = condition.get_text()
     else:
-       condition = "N/A"
+        condition = "N/A"
 
     return condition
 
@@ -227,13 +227,13 @@ def amount_sold(soup):
     attrs = {'class':["qtyTxt", "vi-bboxrev-dsplblk", "vi-qty-fixAlignment"]})
 
     if amount_sold:
-       amount_sold_link = amount_sold.find('a')
-       if amount_sold_link:
-           amount_sold = amount_sold_link.get_text().replace(u',', u'')[:-5]
-       else:
-           amount_sold = "N/A"
+        amount_sold_link = amount_sold.find('a')
+        if amount_sold_link:
+            amount_sold = amount_sold_link.get_text().replace(u',', u'')[:-5]
+        else:
+            amount_sold = "N/A"
     else:
-       amount_sold = "N/A"
+        amount_sold = "N/A"
 
     return amount_sold
 
@@ -284,17 +284,17 @@ def amount_available(soup):
     amount_available = soup.find('span', attrs = {'id':'qtySubTxt'})
 
     if amount_available:
-       amount_available = amount_available.get_text().strip()
-       if amount_available == "More than 10 available":
-          return ">10"
-       elif amount_available == "Limited quantity available":
-          return "Limited quantity"
-       elif amount_available == "Last one":
-          return "1"
-       else:
-          return amount_available[:-10]
+        amount_available = amount_available.get_text().strip()
+        if amount_available == "More than 10 available":
+            return ">10"
+        elif amount_available == "Limited quantity available":
+            return "Limited quantity"
+        elif amount_available == "Last one":
+            return "1"
+        else:
+            return amount_available[:-10]
     else:
-       return "N/A"
+        return "N/A"
 
 
 def inquiries(soup):
@@ -304,9 +304,9 @@ def inquiries(soup):
     inquiries = soup.find(text = pattern)
 
     if inquiries:
-       inquiries = inquiries.replace(u',', u'')[:-10]
+        inquiries = inquiries.replace(u',', u'')[:-10]
     else:
-       inquiries = "N/A"
+        inquiries = "N/A"
 
     return inquiries
 
@@ -317,19 +317,19 @@ def trending_price(soup):
     trending_price = soup.find('div', attrs = {'class':'u-flL vi-bbox-posTop2 '})
 
     if trending_price:
-       for i in trending_price('div'):
-           i.extract()
-       trending_price = trending_price.get_text().strip().replace(u',', u'').encode('ascii','replace')
-       if trending_price[0] == "$":
-           trending_price = trending_price.replace(u'$',u'').strip()
-       elif trending_price[:2] == "US":
-           trending_price = trending_price.replace(u'US ', u'').replace(u'$',u'').strip()
-       elif trending_price[:3] == "GBP" or trending_price[1] == "C" or trending_price[:2] == "AU" or trending_price[:3] == "EUR":
-           trending_price = "Foreign currency"
-       else:
-           trending_price = "Unknown currency"
+        for i in trending_price('div'):
+            i.extract()
+        trending_price = trending_price.get_text().strip().replace(u',', u'').encode('ascii','replace')
+        if trending_price[0] == "$":
+            trending_price = trending_price.replace(u'$',u'').strip()
+        elif trending_price[:2] == "US":
+            trending_price = trending_price.replace(u'US ', u'').replace(u'$',u'').strip()
+        elif trending_price[:3] == "GBP" or trending_price[1] == "C" or trending_price[:2] == "AU" or trending_price[:3] == "EUR":
+            trending_price = "Foreign currency"
+        else:
+            trending_price = "Unknown currency"
     else:
-       trending_price = "N/A"
+        trending_price = "N/A"
 
     return trending_price
 
@@ -340,15 +340,15 @@ def list_price(soup):
     list_price = soup.find('span', attrs = {'id':['orgPrc', 'mm-saleOrgPrc']})
 
     if list_price:
-       list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'').encode('ascii','replace')
-       if list_price == "":
-           list_price = "N/A"
-       elif list_price[:3] == "GBP" or list_price[1] == "C" or list_price[:2] == "AU" or list_price[:3] == "EUR":
-           list_price = 'Foreign currency'
-       else:
-           list_price = list_price.strip().encode('ascii','replace')
+        list_price = list_price.get_text().strip().replace(u'US ', u'').replace(u',', u'').encode('ascii','replace')
+        if list_price == "":
+            list_price = "N/A"
+        elif list_price[:3] == "GBP" or list_price[1] == "C" or list_price[:2] == "AU" or list_price[:3] == "EUR":
+            list_price = 'Foreign currency'
+        else:
+            list_price = list_price.strip().encode('ascii','replace')
     else:
-       list_price = "N/A"
+        list_price = "N/A"
 
     return list_price
 
@@ -359,22 +359,22 @@ def product_discount(soup):
     you_save = soup.find('span', attrs = {'id':'youSaveSTP'})
 
     if not you_save:
-       you_save = soup.find('div', attrs = {'id':'mm-saleAmtSavedPrc'})
+        you_save = soup.find('div', attrs = {'id':'mm-saleAmtSavedPrc'})
 
     if you_save:
-       you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
-       if you_save == "(% off)":
-           you_save_raw = "N/A"
-           you_save_percent = "N/A"
-       elif you_save[:3] == "GBP" or you_save[1] == "C" or you_save[:2] == "AU" or you_save[:3] == "EUR":
-           you_save_raw = "N/A"
-           you_save_percent = "N/A"
-       else:
-           you_save_raw = you_save[1:-9].strip().encode('ascii','replace')
-           you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip().encode('ascii','replace')
+        you_save = you_save.get_text().strip().replace(u'\xa0', u' ').replace(u'US ', u'').replace(u',', u'')
+        if you_save == "(% off)":
+            you_save_raw = "N/A"
+            you_save_percent = "N/A"
+        elif you_save[:3] == "GBP" or you_save[1] == "C" or you_save[:2] == "AU" or you_save[:3] == "EUR":
+            you_save_raw = "N/A"
+            you_save_percent = "N/A"
+        else:
+            you_save_raw = you_save[1:-9].strip().encode('ascii','replace')
+            you_save_percent = you_save.replace(you_save_raw, u'').replace(u'$',u'').replace(u'(',u'').replace(u'% off)',u'').strip().encode('ascii','replace')
     else:
-       you_save_raw = "N/A"
-       you_save_percent = "N/A"
+        you_save_raw = "N/A"
+        you_save_percent = "N/A"
 
     return (you_save_raw, you_save_percent)
 
@@ -493,9 +493,9 @@ def users_watching(soup):
     total_watching = soup.find('span', attrs = {'class':'vi-buybox-watchcount'})
 
     if total_watching:
-       total_watching = total_watching.get_text().replace(u',', u'')
+        total_watching = total_watching.get_text().replace(u',', u'')
     else:
-       total_watching = "N/A"
+        total_watching = "N/A"
 
     return total_watching
 
@@ -506,9 +506,9 @@ def item_location(soup):
     item_location = soup.find('div', attrs = {'class':'iti-eu-bld-gry'})
 
     if item_location:
-       item_location = item_location.get_text().strip().encode('ascii','replace')
+        item_location = item_location.get_text().strip().encode('ascii','replace')
     else:
-       item_location = "N/A"
+        item_location = "N/A"
 
     return item_location
 
@@ -520,9 +520,9 @@ def delivery_date(soup):
     delivery_date = soup.find('span', attrs = {'class':'vi-acc-del-range'})
 
     if delivery_date:
-       delivery_date = delivery_date.get_text().replace(u'and', u'-').encode('ascii','replace')
+        delivery_date = delivery_date.get_text().replace(u'and', u'-').encode('ascii','replace')
     else:
-       delivery_date = "N/A"
+        delivery_date = "N/A"
 
     return delivery_date
 
@@ -533,11 +533,11 @@ def return_policy(soup):
     return_policy = soup.find('span', attrs = {'id':'vi-ret-accrd-txt'})
 
     if return_policy:
-       return_policy = return_policy.get_text().replace(u'\xa0', u' ').strip().encode('ascii','replace')
-       if len(return_policy) > 79:
-           # This is done for aesthetic reasons, in case the description is wordy
-           return_policy = return_policy[:79] + "..."
+        return_policy = return_policy.get_text().replace(u'\xa0', u' ').strip().encode('ascii','replace')
+        if len(return_policy) > 79:
+            # This is done for aesthetic reasons, in case the description is wordy
+            return_policy = return_policy[:79] + "..."
     else:
-       return_policy = "N/A"
+        return_policy = "N/A"
 
     return return_policy
