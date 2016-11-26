@@ -66,6 +66,7 @@ def collect_featured_products(url):
     # between the two
     all_links = list(set(product_links + lxml_links))
 
+    print str(len(all_links)) + " links added"
     return all_links
 
 
@@ -85,4 +86,5 @@ def collect_all_featured_links():
     for url in collect_featured_links():
         all_links += collect_featured_products(url)
 
+    print "Added all featured links to list"
     return all_links
