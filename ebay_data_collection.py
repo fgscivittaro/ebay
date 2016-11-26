@@ -154,8 +154,8 @@ def dynamically_scrape_all_data(filename, num_retries, interval):
     schedule.every(interval).minutes.do(job)
 
     while True:
-       schedule.run_pending()
-       time.sleep(30)
+        schedule.run_pending()
+        time.sleep(30)
 
     print "Dynamic scraping finished"
 
