@@ -1,6 +1,8 @@
 from ebay_scraper import *
 from ebay_links import *
 
+import schedule
+
 def open_new_file(filename):
     """
     Opens a new data file with a specified title; if the title already exists,
@@ -129,3 +131,50 @@ def write_new_file_and_scrape_all_data(filename, num_retries):
 
     open_new_file(filename)
     scrape_all_data_from_all_featured_products(filename, num_retries)
+
+
+def dynamically_scrape_all_data(filename, num_retries, interval):
+    """
+    Repeatedly runs the scraper every time the specified interval has passed
+    and continuously appends the data to a file.
+
+    Inputs:
+        filename: the file to create and append to; must be a .txt file
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
+        interval: (in minutes) the amount of time the scraper must wait before
+            performing another scrape
+
+    Returns:
+        N/A - appends to a file
+    """
+
+    job = scrape_all_data_from_all_featured_products(filename, num_retries)
+
+    schedule.every(interval).minutes.do(job)
+
+    while True:
+       schedule.run_pending()
+       time.sleep(30)
+
+    print "Dynamic scraping finished"
+
+
+def write_new_file_and_dynamically_scrape_all_data(filename, num_retries, interval):
+    """
+    Writes a new file and repeatedly runs the scraper every time the specified
+    interval has passed and continuously appends the data to a file.
+
+    Inputs:
+        filename: the file to create and append to; must be a .txt file
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
+        interval: (in minutes) the amount of time the scraper must wait before
+            performing another scrape
+
+    Returns:
+        N/A - appends to a file
+    """
+
+    open_new_file(filename)
+    dynamically_scrape_all_data(filename, num_retries, interval)
