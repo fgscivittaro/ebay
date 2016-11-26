@@ -54,7 +54,8 @@ def find_all_product_info(url, num_retries = 10):
     'Users Watching': users_watching(soup),
     'Item Location': item_location(soup),
     'Delivery Date': delivery_date(soup),
-    'Return Policy': return_policy(soup)
+    'Return Policy': return_policy(soup),
+    'URL': url
     }
 
     return product_dict
