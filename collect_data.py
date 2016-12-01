@@ -1,5 +1,5 @@
-from ebay_scraper import *
-from ebay_links import *
+from scrape_page import *
+from collect_links import *
 
 import schedule
 
@@ -95,13 +95,14 @@ def scrape_and_append_data(url, filename, num_retries  = 10):
     append_data(filename, product_dict)
 
 
-def scrape_all_data_from_all_featured_products(filename, num_retries = 10):
+def scrape_all_data_from_all_featured_products(filename, link_list, num_retries):
     """
     Takes a list of featured eBay product links, scrapes all information for
     each link, and appends it to a file.
 
     Inputs:
         filename: the file to append to; must be a .txt file
+        link_list: a list of links
         num_retries: (default set to 10) the maximum number of retries in the
             case of 'bounces' before a fatal error is triggered.
 
@@ -109,7 +110,7 @@ def scrape_all_data_from_all_featured_products(filename, num_retries = 10):
         N/A - appends to a file
     """
 
-    for url in collect_all_featured_links():
+    for url in link_list:
         scrape_and_append_data(url, filename, num_retries)
 
     print "Finished appending data for all links"
