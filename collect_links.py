@@ -2,7 +2,8 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
-from ebay_scraper import get_soup
+from scrape_page import get_soup
+from scrape_page import title
 
 def collect_featured_links():
     """
@@ -88,3 +89,59 @@ def collect_all_featured_links():
 
     print "Added all featured links to list"
     return all_links
+
+
+def collect_bad_links(link_list):
+    """
+    Some links are for listings that have already ended. These trigger fatal
+    errors when BeautifulSoup attempts to scrape them, so they must be removed.
+    This function checks for keywords common in bad links and adds the bad links
+    to a set.
+
+    Inputs:
+        link_list: a list of links to check for bad links
+
+    Returns:
+        A set of bad links
+    """
+
+    bad_links = set([])
+
+    ended1 = re.compile(r'This listing has ended')
+    ended2 = re.compile(r'This listing was ended')
+    ended3 = re.compile(r'Bidding has ended')
+
+    for link in link_list:
+        print "Checking link"
+        soup = get_soup(link)
+        ended_listing1 = soup.find(text=ended1)
+        ended_listing2 = soup.find(text=ended2)
+        ended_listing3 = soup.find(text=ended3)
+        check_title = title(soup)
+
+        if ended_listing1 or ended_listing2 or ended_listing3 or check_title=="N/A":
+            bad_links.add(link)
+            print "Bad link added"
+
+    return bad_links
+
+
+def remove_bad_links_from_link_list(bad_links, link_list):
+    """
+    Checks the link list for bad links and removes them
+
+    Inputs:
+        bad_links: a set of previously discovered bad links
+        link_list: a list of links
+
+    Returns:
+        A list of clean links
+    """
+
+    clean_list = []
+
+    for link in link_list:
+        if link not in bad_links:
+            clean_list.append(link)
+
+    return clean_list
