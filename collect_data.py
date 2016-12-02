@@ -141,43 +141,45 @@ def scrape_all_data_from_all_featured_products(filename,
     print "Finished appending data for all links"
 
 
-def write_new_file_and_scrape_all_data(filename, num_retries = 10):
+def write_new_file_and_scrape_all_data(filename, link_list, num_retries = 10):
     """
     Writes a new file, scrapes data from every product link in a list, and
     appends each product's data to the previously created file.
 
     Inputs:
-        filename: the file to create and append to; must be a .txt file
+        filename: the file to append to; must be a .txt file
+        link_list: a list of links
         num_retries: (default set to 10) the maximum number of retries in the
             case of 'bounces' before a fatal error is triggered.
-
     Returns:
         N/A - appends to a file
     """
 
     open_new_file(filename)
-    scrape_all_data_from_all_featured_products(filename, num_retries)
+    scrape_all_data_from_all_featured_products(filename, link_list, num_retries)
 
 
-def dynamically_scrape_all_data(filename, interval, num_retries = 10):
+def dynamically_scrape_data(filename, link_list, interval, num_retries = 10):
     """
     Repeatedly runs the scraper every time the specified interval has passed
     and continuously appends the data to a file.
 
     Inputs:
         filename: the file to create and append to; must be a .txt file
-        num_retries: (default set to 10) the maximum number of retries in the
-            case of 'bounces' before a fatal error is triggered.
+        link_list: a list of links
         interval: (in minutes) the amount of time the scraper must wait before
             performing another scrape
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
 
     Returns:
         N/A - appends to a file
     """
 
-    job = scrape_all_data_from_all_featured_products(filename, num_retries)
-
-    schedule.every(interval).minutes.do(job)
+    schedule.every(interval).minutes.do(
+    scrape_all_data_from_all_featured_products(filename,
+                                               link_list,
+                                               num_retries))
 
     while True:
         schedule.run_pending()
@@ -187,6 +189,7 @@ def dynamically_scrape_all_data(filename, interval, num_retries = 10):
 
 
 def write_new_file_and_dynamically_scrape_all_data(filename,
+                                                   link_list,
                                                    interval,
                                                    num_retries = 10):
     """
@@ -195,27 +198,30 @@ def write_new_file_and_dynamically_scrape_all_data(filename,
 
     Inputs:
         filename: the file to create and append to; must be a .txt file
-        num_retries: (default set to 10) the maximum number of retries in the
-            case of 'bounces' before a fatal error is triggered.
+        link_list: a list of links
         interval: (in minutes) the amount of time the scraper must wait before
             performing another scrape
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
 
     Returns:
         N/A - appends to a file
     """
 
     open_new_file(filename)
-    dynamically_scrape_all_data(filename, num_retries, interval)
+    dynamically_scrape_data(filename, link_list, num_retries, interval)
 
 
-def update_links_and_scrape(filename, num_retries = 10):
+def clean_links_and_scrape(filename, num_retries = 10):
     """
-    Updates the link list by checking for and removing bad links. Once the bad
+    Cleans the link list by checking for and removing bad links. Once the bad
     links have been removed, the function scrapes the clean list and appends the
     data to a file.
 
     Inputs:
         filename: the name of the file to append to
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
 
     Returns:
         N/A - appends to a file
@@ -231,7 +237,7 @@ def update_links_and_scrape(filename, num_retries = 10):
                                                num_retries)
 
 
-def update_links_and_dynamically_scrape(filename, interval, num_retries = 10):
+def clean_links_and_dynamically_scrape(filename, interval, num_retries = 10):
     """
     Repeatedly updates the link list and runs the scraper every time the
     specified interval has passed and continuously appends the data to a file.
@@ -246,9 +252,8 @@ def update_links_and_dynamically_scrape(filename, interval, num_retries = 10):
         N/A - appends to a file
     """
 
-    job = update_links_and_scrape(filename, num_retries)
-
-    schedule.every(interval).minutes.do(job)
+    schedule.every(interval).minutes.do(clean_links_and_scrape(filename,
+                                                               num_retries))
 
     while True:
         schedule.run_pending()
@@ -277,4 +282,4 @@ def write_new_file_update_links_and_dynamically_scrape(filename,
     """
 
     open_new_file(filename)
-    update_links_and_dynamically_scrape(filename, interval, num_retries)
+    clean_links_and_dynamically_scrape(filename, interval, num_retries)
