@@ -16,12 +16,35 @@ def open_new_file(filename):
 
     with open(filename, "w") as initial_file:
         initial_file.write(
-        "Time;Item ID;Title;Condition;Trending Price ($);List price ($);" +
-        "Product Discount ($);Product Discount (%);Current Price ($);Shipping Cost ($);" +
-        "Item Location;Delivery Date;Return Policy;Total Ratings;" +
-        "Product Rating (0.0-5.0);Username;Seller Reviews;Seller Feedback (%);" +
-        "Hot Info;Users Watching;Amount Sold;Percent Sold (%);Amount Available;Inquiries;" +
-        "First Reason;Second Reason;Third Reason;Date;URL" + "\n"
+        "Time" + ";" +
+        "Item ID" + ";" +
+        "Title" + ";" +
+        "Condition" + ";" +
+        "Trending Price ($)" + ";" +
+        "List price ($)" + ";" +
+        "Product Discount ($)" + ";" +
+        "Product Discount (%)" + ";" +
+        "Current Price ($)" + ";" +
+        "Shipping Cost ($)" + ";" +
+        "Item Location" + ";" +
+        "Delivery Date" + ";" +
+        "Return Policy" + ";" +
+        "Total Ratings" + ";" +
+        "Product Rating (0.0-5.0)" + ";" +
+        "Username" + ";" +
+        "Seller Reviews" + ";" +
+        "Seller Feedback (%)" + ";" +
+        "Hot Info" + ";" +
+        "Users Watching" + ";" +
+        "Amount Sold" + ";" +
+        "Percent Sold (%)" + ";" +
+        "Amount Available" + ";" +
+        "Inquiries" + ";" +
+        "First Reason" + ";" +
+        "Second Reason" + ";" +
+        "Third Reason" + ";" +
+        "Date" + ";" +
+        "URL" + "\n"
         )
 
     print "New file named %s created" % (filename)
@@ -95,7 +118,9 @@ def scrape_and_append_data(url, filename, num_retries  = 10):
     append_data(filename, product_dict)
 
 
-def scrape_all_data_from_all_featured_products(filename, link_list, num_retries):
+def scrape_all_data_from_all_featured_products(filename,
+                                               link_list,
+                                               num_retries = 10):
     """
     Takes a list of featured eBay product links, scrapes all information for
     each link, and appends it to a file.
@@ -116,7 +141,7 @@ def scrape_all_data_from_all_featured_products(filename, link_list, num_retries)
     print "Finished appending data for all links"
 
 
-def write_new_file_and_scrape_all_data(filename, num_retries):
+def write_new_file_and_scrape_all_data(filename, num_retries = 10):
     """
     Writes a new file, scrapes data from every product link in a list, and
     appends each product's data to the previously created file.
@@ -134,7 +159,7 @@ def write_new_file_and_scrape_all_data(filename, num_retries):
     scrape_all_data_from_all_featured_products(filename, num_retries)
 
 
-def dynamically_scrape_all_data(filename, num_retries, interval):
+def dynamically_scrape_all_data(filename, interval, num_retries = 10):
     """
     Repeatedly runs the scraper every time the specified interval has passed
     and continuously appends the data to a file.
@@ -161,7 +186,9 @@ def dynamically_scrape_all_data(filename, num_retries, interval):
     print "Dynamic scraping finished"
 
 
-def write_new_file_and_dynamically_scrape_all_data(filename, num_retries, interval):
+def write_new_file_and_dynamically_scrape_all_data(filename,
+                                                   interval,
+                                                   num_retries = 10):
     """
     Writes a new file and repeatedly runs the scraper every time the specified
     interval has passed and continuously appends the data to a file.
@@ -179,3 +206,75 @@ def write_new_file_and_dynamically_scrape_all_data(filename, num_retries, interv
 
     open_new_file(filename)
     dynamically_scrape_all_data(filename, num_retries, interval)
+
+
+def update_links_and_scrape(filename, num_retries = 10):
+    """
+    Updates the link list by checking for and removing bad links. Once the bad
+    links have been removed, the function scrapes the clean list and appends the
+    data to a file.
+
+    Inputs:
+        filename: the name of the file to append to
+
+    Returns:
+        N/A - appends to a file
+
+    """
+
+    link_list = collect_all_featured_links()
+    bad_links = collect_bad_links(link_list)
+    clean_links = remove_bad_links_from_link_list(bad_links, link_list)
+
+    scrape_all_data_from_all_featured_products(filename,
+                                               clean_links,
+                                               num_retries)
+
+
+def update_links_and_dynamically_scrape(filename, interval, num_retries = 10):
+    """
+    Repeatedly updates the link list and runs the scraper every time the
+    specified interval has passed and continuously appends the data to a file.
+
+    Inputs:
+        filename: the file to create and append to; must be a .txt file
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
+        interval: (in minutes) the amount of time the scraper must wait before
+            performing another scrape
+    Returns:
+        N/A - appends to a file
+    """
+
+    job = update_links_and_scrape(filename, num_retries)
+
+    schedule.every(interval).minutes.do(job)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
+
+    print "Dynamic scraping finished"
+
+
+def write_new_file_update_links_and_dynamically_scrape(filename,
+                                                       interval,
+                                                       num_retries = 10):
+    """
+    Writes a new file and repeatedly updates the link list and runs the scraper
+    every time the specified interval has passed and continuously appends the
+    data to a file.
+
+    Inputs:
+        filename: the file to create and append to; must be a .txt file
+        num_retries: (default set to 10) the maximum number of retries in the
+            case of 'bounces' before a fatal error is triggered.
+        interval: (in minutes) the amount of time the scraper must wait before
+            performing another scrape
+
+    Returns:
+        N/A - appends to a file
+    """
+
+    open_new_file(filename)
+    update_links_and_dynamically_scrape(filename, interval, num_retries)
