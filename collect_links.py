@@ -8,11 +8,6 @@ from scrape_page import get_title
 def collect_featured_links():
     """
     Scrapes the eBay home page and returns the links to each featured collection
-
-    Inputs: none
-
-    Returns: a list of links, each of which corresponds to an eBay featured
-        collection
     """
 
     soup = get_soup('http://www.ebay.com/')
@@ -29,12 +24,7 @@ def collect_featured_links():
 def collect_featured_products(url):
     """
     Takes in the url of a featured collection and returns all the product links
-    within the collection
-
-    Inputs:
-        url: the url of a featured collection
-
-    Returns: a list of the product links found within the featured collection
+    within the collection.
     """
 
     soup = get_soup(url)
@@ -75,11 +65,6 @@ def collect_all_featured_links():
     """
     Iterates through collect_featured_links and returns a combined list of all
     the featured product links within all of the featured collections.
-
-    Inputs: none
-
-    Returns: A list of every featured url found in all the featured collections
-    on eBay's home page
     """
 
     all_links = []
@@ -97,12 +82,6 @@ def collect_bad_links(link_list):
     errors when BeautifulSoup attempts to scrape them, so they must be removed.
     This function checks for keywords common in bad links and adds the bad links
     to a set.
-
-    Inputs:
-        link_list: a list of links to check for bad links
-
-    Returns:
-        A set of bad links
     """
 
     bad_links = set([])
@@ -132,13 +111,6 @@ def collect_bad_links(link_list):
 def remove_bad_links_from_link_list(bad_links, link_list):
     """
     Checks the link list for bad links and removes them
-
-    Inputs:
-        bad_links: a set of previously discovered bad links
-        link_list: a list of links
-
-    Returns:
-        A list of clean links
     """
 
     clean_list = []
