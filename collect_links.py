@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 from scrape_page import get_soup
-from scrape_page import title
+from scrape_page import get_title
 
 def collect_featured_links():
     """
@@ -117,9 +117,12 @@ def collect_bad_links(link_list):
         ended_listing1 = soup.find(text=ended1)
         ended_listing2 = soup.find(text=ended2)
         ended_listing3 = soup.find(text=ended3)
-        check_title = title(soup)
+        title = get_title(soup)
 
-        if ended_listing1 or ended_listing2 or ended_listing3 or check_title=="N/A":
+        if (ended_listing1
+        or ended_listing2
+        or ended_listing3
+        or title=="N/A"):
             bad_links.add(link)
             print "Bad link added"
 
