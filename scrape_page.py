@@ -368,6 +368,7 @@ def get_list_price(soup):
         list_price = (list_price.get_text()
                                 .strip()
                                 .replace(u'US ', u'')
+                                .replace(u'$', u'')
                                 .replace(u',', u'')
                                 .encode('ascii','replace'))
         if list_price == "":
@@ -378,7 +379,7 @@ def get_list_price(soup):
         or list_price[:3] == "EUR"):
             list_price = 'Foreign currency'
         else:
-            list_price = list_price.strip().encode('ascii','replace')
+            list_price = list_price.strip()
     else:
         list_price = "N/A"
 
