@@ -11,13 +11,6 @@ from time import localtime
 def find_all_product_info(url, num_retries = 10):
     """
     Returns all the information for a product in a dict
-
-    Inputs:
-        url: the product url
-        num_retries: (default set to 10) the maximum number of retries in the
-            case of 'bounces' before a fatal error is triggered.
-
-    Returns: a dict containing all the product's information
     """
 
     soup = get_soup(url, num_retries)
@@ -65,14 +58,6 @@ def get_soup(url, num_retries = 10):
     """
     Takes in a url and returns the parsed BeautifulSoup code for that url with
     handling capabilities if the request 'bounces'.
-
-    Inputs:
-        url: the url to be parsed
-        num_retries: (default set to 10) the maximum number of retries in the
-            case of 'bounces' before a fatal error is triggered.
-
-    Returns:
-        BeautifulSoup code for the url
     """
 
     s = requests.Session()
@@ -89,7 +74,9 @@ def get_soup(url, num_retries = 10):
 
 
 def get_date_and_time():
-    # Returns the current date and time as a tuple (date, time)
+    """
+    Returns the current date and time as a tuple (date, time)
+    """
 
     mydate = time.strftime("%m/%d/%Y", localtime())
     mytime = time.strftime("%H:%M:%S", localtime())
@@ -98,7 +85,9 @@ def get_date_and_time():
 
 
 def get_item_number(soup):
-    # Returns the product's unique item_number
+    """
+    Returns the product's unique item_number
+    """
 
     item_number = soup.find('div', attrs = {'id':'descItemNumber'})
 
@@ -111,8 +100,10 @@ def get_item_number(soup):
 
 
 def get_title(soup):
-    # Returns the product title. If there is an unknown character in the title,
-    # it returns it as '?'.
+    """
+    Returns the product title. If there is an unknown character in the title, it
+    returns it as '?'.
+    """
 
     title = soup.find('h1', attrs = {'class':'it-ttl'})
 
@@ -127,7 +118,9 @@ def get_title(soup):
 
 
 def get_product_rating(soup):
-    # Returns the product's rating, which is an int from 0 to 5 (five stars)
+    """
+    Returns the product's rating, which is an int from 0 to 5 (five stars)
+    """
 
     product_rating = soup.find('span', attrs = {'class':'reviews-seeall-hdn'})
 
@@ -140,7 +133,9 @@ def get_product_rating(soup):
 
 
 def get_total_ratings(soup):
-    # Returns the total number of ratings the product has received
+    """
+    Returns the total number of ratings the product has received
+    """
 
     total_ratings = soup.find('a', attrs = {'class':"prodreview vi-VR-prodRev"})
 
@@ -156,7 +151,9 @@ def get_total_ratings(soup):
 
 
 def get_username(soup):
-    # Returns the seller's eBay username
+    """
+    Returns the seller's eBay username
+    """
 
     username = soup.find('span', attrs = {'class':'mbg-nw'})
 
@@ -169,7 +166,9 @@ def get_username(soup):
 
 
 def get_seller_reviews(soup):
-    # Returns the total number of reviews the seller has received
+    """
+    Returns the total number of reviews the seller has received
+    """
 
     seller_reviews = soup.find('span', attrs = {'class':'mbg-l'})
 
@@ -182,7 +181,9 @@ def get_seller_reviews(soup):
 
 
 def get_seller_feedback(soup):
-    # Returns the seller's positive feedback rating, given as a percent
+    """
+    Returns the seller's positive feedback rating, given as a percent
+    """
 
     seller_feedback = soup.find('div', attrs = {'id':'si-fb'})
 
@@ -196,8 +197,10 @@ def get_seller_feedback(soup):
 
 
 def get_hot_info(soup):
-    # Returns the information given by eBay next to the "fire" emblem under
-    # the title. This information is chosen by eBay and varies greatly.
+    """
+    Returns the information given by eBay next to the "fire" emblem under the
+    title. This information is chosen by eBay and varies greatly.
+    """
 
     hot_info = soup.find('div', attrs = {'id':'vi_notification_new'})
 
@@ -213,7 +216,9 @@ def get_hot_info(soup):
 
 
 def get_condition(soup):
-    # Returns the declared condition of the item
+    """
+    Returns the declared condition of the item
+    """
 
     condition = soup.find('div', attrs = {'class':"u-flL condText  "})
 
@@ -228,7 +233,9 @@ def get_condition(soup):
 
 
 def get_amount_sold(soup):
-    # Returns how many units of the product have been sold
+    """
+    Returns how many units of the product have been sold
+    """
 
     amount_sold = soup.find('span',
     attrs = {'class':["qtyTxt", "vi-bboxrev-dsplblk", "vi-qty-fixAlignment"]})
@@ -247,7 +254,9 @@ def get_amount_sold(soup):
 
 
 def get_percent_sold(soup):
-    # Returns the percent of inventory sold, if it is made available
+    """
+    Returns the percent of inventory sold, if it is made available
+    """
 
     why_to_buy = soup.find('div', attrs = {'id':'why2buy'})
 
@@ -274,10 +283,6 @@ def get_three_reasons(soup):
     """
     Takes in the eBay page's soup code and parses it for the (up to) three
     reasons eBay lists for why the buyer should buy.
-
-    Inputs: the soup code
-
-    Returns: a tuple (reason1, reason2, reason3) for each reason listed by eBay
     """
 
     why_to_buy = soup.find('div', attrs = {'id':'why2buy'})
@@ -296,7 +301,9 @@ def get_three_reasons(soup):
 
 
 def get_amount_available(soup):
-    # Returns how many available units of the product are left
+    """
+    Returns how many available units of the product are left
+    """
 
     amount_available = soup.find('span', attrs = {'id':'qtySubTxt'})
 
@@ -315,7 +322,9 @@ def get_amount_available(soup):
 
 
 def get_inquiries(soup):
-    # Returns the number of inquiries, if the information is displayed
+    """
+    Returns the number of inquiries, if the information is displayed
+    """
 
     pattern = re.compile(r'inquiries')
     inquiries = soup.find(text = pattern)
@@ -329,7 +338,9 @@ def get_inquiries(soup):
 
 
 def get_trending_price(soup):
-    # Returns the trending price of the product
+    """
+    Returns the trending price of the product
+    """
 
     trending_price = soup.find('div',
                                 attrs = {'class':'u-flL vi-bbox-posTop2 '})
@@ -361,7 +372,9 @@ def get_trending_price(soup):
 
 
 def get_list_price(soup):
-    # Returns the original price of the product
+    """
+    Returns the original price of the product
+    """
 
     list_price = soup.find('span', attrs = {'id':['orgPrc', 'mm-saleOrgPrc']})
 
@@ -388,7 +401,9 @@ def get_list_price(soup):
 
 
 def get_product_discount(soup):
-    # Returns the product discount as a tuple (raw amount, percent amount)
+    """
+    Returns the product discount as a tuple (raw amount, percent amount)
+    """
 
     you_save = soup.find('span', attrs = {'id':'youSaveSTP'})
 
@@ -429,7 +444,9 @@ def get_product_discount(soup):
 
 
 def get_current_price(soup):
-    # Returns the product's current price, after discounts
+    """
+    Returns the product's current price, after discounts
+    """
 
     now_price = soup.find('span', attrs = {'id':'prcIsum'})
 
@@ -469,7 +486,9 @@ def get_current_price(soup):
 
 
 def get_shipping_cost(soup):
-    # Returns the product's shipping costs
+    """
+    Returns the product's shipping costs
+    """
 
     shipping_cost = soup.find('span', attrs = {'id':'fshippingCost'})
 
@@ -514,7 +533,9 @@ def get_shipping_cost(soup):
 
 
 def get_users_watching(soup):
-    # Returns the total number of users watching the product
+    """
+    Returns the total number of users watching the product
+    """
 
     total_watching = soup.find('span', attrs = {'class':'vi-buybox-watchcount'})
 
@@ -527,7 +548,9 @@ def get_users_watching(soup):
 
 
 def get_item_location(soup):
-    # Returns the seller's location--where the item will be shipped from
+    """
+    Returns the seller's location--where the item will be shipped from
+    """
 
     item_location = soup.find('div', attrs = {'class':'iti-eu-bld-gry'})
 
@@ -542,8 +565,10 @@ def get_item_location(soup):
 
 
 def get_delivery_date(soup):
-    # Returns the estimated date at which the product will be delivered to the
-    # the location of the computer that makes the page request.
+    """
+    Returns the estimated date at which the product will be delivered to the
+    location of the computer that makes the page request.
+    """
 
     delivery_date = soup.find('span', attrs = {'class':'vi-acc-del-range'})
 
@@ -558,7 +583,9 @@ def get_delivery_date(soup):
 
 
 def get_return_policy(soup):
-    # Returns the return policy offered by the seller
+    """
+    Returns the return policy offered by the seller
+    """
 
     return_policy = soup.find('span', attrs = {'id':'vi-ret-accrd-txt'})
 
