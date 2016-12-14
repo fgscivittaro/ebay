@@ -603,7 +603,6 @@ def get_return_policy(soup):
     return return_policy
 
 
-'''
 def get_sold_history(soup):
     """
     Returns a dictionary containing the history of the product's sales (up to
@@ -617,10 +616,24 @@ def get_sold_history(soup):
     if not amount_sold:
         return {}
 
+    sales_dict = {}
+
     history_link = amount_sold.find('a').get('href')
     new_soup = get_soup(history_link)
     sales_list = new_soup.find_all('tr',
-                                   attrs = {'bgcolor':['ffffff', 'f2f2f2']})
+                                   attrs = {'bgcolor':['#ffffff', '#f2f2f2']})
 
-    return {}
-'''
+    for i in range(len(sales_list)):
+        color = (sales_list[i].find('td', attrs = {
+                                     'class':'variationContentValueFont'})
+                                     .get_text().replace(u'Color: ',u'')
+        other_info = [(x.get_text() for x in sales_list[i].find_all(
+                      'td', attrs={'class':'contentValueFont'}))]
+
+        price = other_info[0].replace(u'US $',u'')
+        quantity = other_info[1]
+        datetime = other_info[2]
+
+        sales_dict[i] = (datetime, price, quantity, color)
+
+    return sales_dict
