@@ -626,14 +626,14 @@ def get_sold_history(soup):
     for i in range(len(sales_list)):
         color = (sales_list[i].find('td', attrs = {
                                      'class':'variationContentValueFont'})
-                                     .get_text().replace(u'Color: ',u'')
-        other_info = [(x.get_text() for x in sales_list[i].find_all(
-                      'td', attrs={'class':'contentValueFont'}))]
+                                     .get_text().replace(u'Color: ',u''))
+        other_info = sales_list[i].find_all('td', attrs={
+                                            'class':'contentValueFont'})
 
-        price = other_info[0].replace(u'US $',u'')
-        quantity = other_info[1]
-        datetime = other_info[2]
+        price = other_info[0].get_text().replace(u'US $',u'')
+        quantity = other_info[1].get_text()
+        datetime = other_info[2].get_text()
 
-        sales_dict[i] = (datetime, price, quantity, color)
+        sales_dict[i + 1] = (datetime, price, quantity, color)
 
     return sales_dict
