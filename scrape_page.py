@@ -634,6 +634,12 @@ def get_sold_history(soup):
         quantity = other_info[1].get_text()
         datetime = other_info[2].get_text()
 
-        sales_dict[i + 1] = (datetime, price, quantity, color)
+        sales_dict = {
+        'UserID': str(i + 1),
+        'Date and Time': datetime,
+        'Price ($)': price,
+        'Quantity': quantity,
+        'Color': color
+        }
 
     return sales_dict
