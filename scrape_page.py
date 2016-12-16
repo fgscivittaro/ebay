@@ -625,8 +625,13 @@ def get_sold_history(soup):
 
     for i in range(len(sales_list)):
         color = (sales_list[i].find('td', attrs = {
-                                     'class':'variationContentValueFont'})
-                                     .get_text().replace(u'Color: ',u''))
+                                     'class':'variationContentValueFont'}))
+
+        if color:
+            color = color.get_text().replace(u'Color: ',u'')
+        else:
+            color = "N/A"
+
         other_info = sales_list[i].find_all('td', attrs={
                                             'class':'contentValueFont'})
 

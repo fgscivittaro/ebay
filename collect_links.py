@@ -120,3 +120,19 @@ def remove_bad_links_from_link_list(bad_links, link_list):
             clean_list.append(link)
 
     return clean_list
+
+
+def remove_old_links(old_list, new_list):
+    """
+    Checks two link lists and returns a list containing links that are in the
+    new list but not the old list.
+    """
+
+    new_links = []
+    old_set = set(old_list)
+
+    for link in new_list:
+        if link not in old_set:
+            new_links.append(link)
+
+    return new_links
