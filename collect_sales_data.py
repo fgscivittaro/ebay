@@ -86,3 +86,22 @@ def clean_links_and_scrape_sales_data(filename, num_retries = 10):
     scrape_and_append_sales_data_from_featured_links(filename,
                                                      clean_links,
                                                      num_retries)
+
+
+def dynamically_scrape_and_append_sales_data(filename,
+                                             interval,
+                                             num_retries = 10):
+    """
+    Dynamically scrapes sales data and appends the data to a file.
+    """
+
+    def job():
+        # What?
+
+    schedule.every(interval).hours.do(job)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
+
+    print "Dynamic scraping finished"

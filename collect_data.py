@@ -128,10 +128,12 @@ def dynamically_scrape_data(filename, link_list, interval, num_retries = 10):
     and continuously appends the data to a file.
     """
 
-    schedule.every(interval).minutes.do(
-    scrape_all_data_from_all_featured_products(filename,
-                                               link_list,
-                                               num_retries))
+    def job():
+        scrape_all_data_from_all_featured_products(filename,
+                                                   link_list,
+                                                   num_retries))
+
+    schedule.every(interval).minutes.do(job)
 
     while True:
         schedule.run_pending()
@@ -175,8 +177,10 @@ def clean_links_and_dynamically_scrape(filename, interval, num_retries = 10):
     specified interval has passed and continuously appends the data to a file.
     """
 
-    schedule.every(interval).minutes.do(clean_links_and_scrape(filename,
-                                                               num_retries))
+    def job():
+        clean_links_and_scrape(filename, num_retries)
+
+    schedule.every(interval).minutes.do(job)
 
     while True:
         schedule.run_pending()
