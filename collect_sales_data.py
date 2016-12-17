@@ -103,13 +103,13 @@ def dynamically_scrape_and_append_sales_data(filename,
     old_list = []
 
     def job():
-        link_list = collect_all_featured_links()
-        bad_links = collect_bad_links(link_list)
-        new_list = remove_bad_links_from_link_list(bad_links, link_list)
-
+        new_list = collect_all_featured_links()
         new_links = remove_old_links(old_list, new_list)
+        bad_links = collect_bad_links(new_links)
+        clean_links = remove_bad_links_from_link_list(bad_links, new_links)
+
         scrape_and_append_sales_data_from_featured_links(filename,
-                                                         new_links,
+                                                         clean_links,
                                                          num_retries)
 
         old_list = new_list
