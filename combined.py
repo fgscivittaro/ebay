@@ -42,7 +42,7 @@ def scrape_combined_data_from_all_featured_products(data_filename,
 
 
 def clean_links_and_scrape_combined_data(data_filename,
-                                         sales_filename
+                                         sales_filename,
                                          num_retries = 10):
     """
     Scrapes a list of clean featured links and appends the data to their
@@ -83,6 +83,7 @@ def dynamically_scrape_combined_data(data_filename,
 
         old_list = new_list
 
+    job()
     schedule.every(interval).hours.do(job)
 
     while True:
@@ -95,7 +96,7 @@ def dynamically_scrape_combined_data(data_filename,
 def write_new_files_and_dynamically_scrape_combined_data(data_filename,
                                                          sales_filename,
                                                          interval,
-                                                         num_retries):
+                                                         num_retries = 10):
     """
     Writes a new file and then dynamically scrapes sales data.
     """

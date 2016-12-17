@@ -131,8 +131,8 @@ def dynamically_scrape_data(filename, link_list, interval, num_retries = 10):
     def job():
         scrape_all_data_from_all_featured_products(filename,
                                                    link_list,
-                                                   num_retries))
-
+                                                   num_retries)
+    job()
     schedule.every(interval).minutes.do(job)
 
     while True:
@@ -180,6 +180,7 @@ def clean_links_and_dynamically_scrape(filename, interval, num_retries = 10):
     def job():
         clean_links_and_scrape(filename, num_retries)
 
+    job()
     schedule.every(interval).minutes.do(job)
 
     while True:

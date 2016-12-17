@@ -114,6 +114,7 @@ def dynamically_scrape_and_append_sales_data(filename,
 
         old_list = new_list
 
+    job()
     schedule.every(interval).hours.do(job)
 
     while True:
