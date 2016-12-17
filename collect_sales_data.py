@@ -102,7 +102,7 @@ def dynamically_scrape_and_append_sales_data(filename,
 
     old_list = []
 
-    def job():
+    def job(old_list):
         new_list = collect_all_featured_links()
         new_links = remove_old_links(old_list, new_list)
         bad_links = collect_bad_links(new_links)
@@ -114,7 +114,7 @@ def dynamically_scrape_and_append_sales_data(filename,
 
         old_list = new_list
 
-    job()
+    job(old_list)
     schedule.every(interval).hours.do(job)
 
     while True:
