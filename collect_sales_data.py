@@ -1,6 +1,8 @@
 from scrape_page import *
 from collect_links import *
 
+import schedule
+
 def open_new_sales(filename):
         """
         Opens a new sales data file with a specified title; if the title already exists,
@@ -92,11 +94,24 @@ def dynamically_scrape_and_append_sales_data(filename,
                                              interval,
                                              num_retries = 10):
     """
-    Dynamically scrapes sales data and appends the data to a file.
+    Dynamically scrapes sales data and appends the data to a file by generating
+    a list of links, checking it against an old list and only keeping new links,
+    and scraping those links for sales data.
     """
 
+    old_list = []
+
     def job():
-        # What?
+        link_list = collect_all_featured_links()
+        bad_links = collect_bad_links(link_list)
+        new_list = remove_bad_links_from_link_list(bad_links, link_list)
+
+        new_links = remove_old_links(old_list, new_list)
+        scrape_and_append_sales_data_from_featured_links(filename,
+                                                         new_links,
+                                                         num_retries)
+
+        old_list = new_list
 
     schedule.every(interval).hours.do(job)
 
@@ -105,3 +120,16 @@ def dynamically_scrape_and_append_sales_data(filename,
         time.sleep(30)
 
     print "Dynamic scraping finished"
+
+
+def write_new_file_and_dynamically_scrape_all_sales_data(filename,
+                                                         interval,
+                                                         num_retries):
+    """
+    Writes a new file and then dynamically scrapes sales data.
+    """
+
+    open_new_sales(filename)
+    dynamically_scrape_and_append_sales_data(filename,
+                                             interval,
+                                             num_retries)
