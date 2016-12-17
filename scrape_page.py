@@ -1,6 +1,7 @@
 import requests
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from sale import Sale
 
 import time
 import re
@@ -603,7 +604,7 @@ def get_return_policy(soup):
     return return_policy
 
 
-def get_sold_history(soup):
+def get_sales_history(soup):
     """
     Returns a dictionary containing the history of the product's sales (up to
     the 100 most recent sales) in which a counter is assigned as the key
@@ -639,12 +640,6 @@ def get_sold_history(soup):
         quantity = other_info[1].get_text()
         datetime = other_info[2].get_text()
 
-        sales_dict = {
-        'UserID': str(i + 1),
-        'Date and Time': datetime,
-        'Price ($)': price,
-        'Quantity': quantity,
-        'Color': color
-        }
+        sales_dict[i + 1] = Sale(datetime, price, quantity, color)
 
     return sales_dict

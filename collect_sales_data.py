@@ -3,7 +3,7 @@ from collect_links import *
 
 import schedule
 
-def open_new_sales(filename):
+def open_new_sales_file(filename):
         """
         Opens a new sales data file with a specified title; if the title already exists,
         then the function will overwrite the old file and create a new file with
@@ -30,19 +30,20 @@ def scrape_and_append_sales_data(url, filename, num_retries = 10):
     """
 
     soup = get_soup(url, num_retries = 10)
-    sales_dict = get_sold_history(soup)
+    sales_dict = get_sales_history(soup)
 
     if sales_dict:
         item_id = get_item_number(soup)
-        with open(filename, "a") as data_file:
-            data_file.write(
-            item_id + ';' +
-            sales_dict['UserID'] + ';' +
-            sales_dict['Date and Time'] + ';' +
-            sales_dict['Price ($)'] + ';' +
-            sales_dict['Quantity'] + ';' +
-            sales_dict['Color'] + '\n'
-            )
+        for key in sales_dict:
+            with open(filename, "a") as data_file:
+                data_file.write(
+                item_id + ';' +
+                sales_dict[key].transaction_id + ';' +
+                sales_dict[key].datetime + ';' +
+                sales_dict[key].price + ';' +
+                sales_dict[key].quantity + ';' +
+                sales_dict[key].color + '\n'
+                )
 
     print "Data scraped and appended"
 
@@ -68,7 +69,7 @@ def write_new_file_and_scrape_all_sales_data(filename,
     link list.
     """
 
-    open_new_sales(filename)
+    open_new_sales_file(filename)
     scrape_and_append_sales_data_from_featured_links(filename,
                                                      link_list,
                                                      num_retries)
@@ -129,7 +130,7 @@ def write_new_file_and_dynamically_scrape_all_sales_data(filename,
     Writes a new file and then dynamically scrapes sales data.
     """
 
-    open_new_sales(filename)
+    open_new_sales_file(filename)
     dynamically_scrape_and_append_sales_data(filename,
                                              interval,
                                              num_retries)
